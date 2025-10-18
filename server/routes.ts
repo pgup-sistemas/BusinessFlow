@@ -271,6 +271,103 @@ export function registerRoutes(app: Express) {
     }
   });
 
+  app.post("/api/reviews/batch-process", isAuthenticated, async (req, res) => {
+    try {
+      const { reviewIds } = req.body;
+      
+      if (!Array.isArray(reviewIds) || reviewIds.length === 0) {
+        return res.status(400).json({ error: "reviewIds array is required" });
+      }
+
+      const results = [];
+      
+      for (const reviewId of reviewIds) {
+        try {
+          const review = await storage.getReview(reviewId);
+          if (!review) continue;
+
+          await storage.updateReview(review.id, { status: "processing" });
+
+          const language = review.languageDetected || "pt-BR";
+          const templates = await storage.getTemplates();
+          const companyTemplates = templates.filter(
+            (t) => t.companyId === review.companyId && t.isActive
+          );
+
+          const matchedTemplate = findBestTemplate(companyTemplates, {
+            rating: review.rating,
+            reviewText: review.text || undefined,
+            language,
+          });
+
+          if (matchedTemplate) {
+            const company = await storage.getCompany(review.companyId);
+            if (!company) continue;
+
+            const processedTemplate = replacePlaceholders(matchedTemplate.template.body, {
+              authorName: review.authorName || undefined,
+              companyName: company.name,
+              rating: review.rating,
+            });
+
+            let responseText = processedTemplate;
+            let confidenceScore = 0.9;
+
+            try {
+              const aiResult = await generateResponse({
+                template: processedTemplate,
+                reviewText: review.text || "",
+                rating: review.rating,
+                authorName: review.authorName || undefined,
+                companyName: company.name,
+                tone: matchedTemplate.template.tone,
+              });
+              responseText = aiResult.responseText;
+              confidenceScore = aiResult.confidenceScore;
+            } catch (error) {
+              console.error("AI generation failed:", error);
+            }
+
+            const moderation = moderateResponse(responseText, review.rating, confidenceScore);
+
+            const response = await storage.createResponse({
+              reviewId: review.id,
+              templateId: matchedTemplate.template.id,
+              responseText,
+              moderationStatus: moderation.action === "BLOCK" ? "blocked" : "approved",
+              moderationFlags: moderation.flags,
+              confidenceScore,
+              status: moderation.action === "BLOCK" ? "pending_approval" : "pending_send",
+            });
+
+            await storage.updateTemplate(matchedTemplate.template.id, {
+              usageCount: (matchedTemplate.template.usageCount || 0) + 1,
+              lastUsedAt: new Date(),
+            });
+
+            if (moderation.action !== "BLOCK") {
+              await storage.updateReview(review.id, { status: "completed" });
+            }
+
+            results.push({ reviewId, success: true, responseId: response.id });
+          } else {
+            await storage.updateReview(review.id, {
+              status: "failed",
+              errorMessage: "No matching template found",
+            });
+            results.push({ reviewId, success: false, error: "No matching template" });
+          }
+        } catch (error: any) {
+          results.push({ reviewId, success: false, error: error.message });
+        }
+      }
+
+      res.json({ results });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   app.post("/api/reviews/:id/process", isAuthenticated, async (req, res) => {
     try {
       const review = await storage.getReview(parseInt(req.params.id));

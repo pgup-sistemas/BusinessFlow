@@ -279,11 +279,6 @@ export class DatabaseStorage implements IStorage {
     return review;
   }
 
-  async createReview(data: InsertReview): Promise<Review> {
-    const [review] = await db.insert(reviews).values(data).returning();
-    return review;
-  }
-
   async getReviewByExternalId(externalId: string): Promise<Review | undefined> {
     const [review] = await db.select()
       .from(reviews)
@@ -297,6 +292,36 @@ export class DatabaseStorage implements IStorage {
       .from(reviews)
       .where(eq(reviews.companyId, companyId))
       .orderBy(desc(reviews.reviewDate));
+  }
+
+  async createReview(data: Partial<InsertReview> & {
+    googleReviewId: string;
+    googleProfileId: number;
+    companyId: number;
+    rating: number;
+    reviewCreatedAt: Date;
+    priority: string;
+  }): Promise<Review> {
+    const reviewData: InsertReview = {
+      googleReviewId: data.googleReviewId,
+      googleProfileId: data.googleProfileId,
+      companyId: data.companyId,
+      authorName: data.authorName || null,
+      rating: data.rating,
+      text: data.text || null,
+      languageDetected: data.languageDetected || null,
+      sentimentScore: data.sentimentScore || null,
+      priority: data.priority,
+      requiresHumanReview: data.requiresHumanReview || false,
+      reviewCreatedAt: data.reviewCreatedAt,
+      processedAt: data.processedAt || null,
+      status: data.status || 'pending',
+      errorMessage: data.errorMessage || null,
+      retryCount: data.retryCount || 0,
+    };
+
+    const [review] = await db.insert(reviews).values(reviewData).returning();
+    return review;
   }
 
   async updateReview(id: number, data: Partial<Review>): Promise<Review> {

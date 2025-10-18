@@ -1,0 +1,49 @@
+
+> rest-express@1.0.0 dev
+> NODE_ENV=development tsx server/index.ts
+
+3:03:06 PM [express] Server running on port 5000
+Browserslist: browsers data (caniuse-lite) is 12 months old. Please run:
+  npx update-browserslist-db@latest
+  Why you should do it regularly: https://github.com/browserslist/update-db#readme
+
+A PostCSS plugin did not pass the `from` option to `postcss.parse`. This may cause imported assets to be incorrectly transformed. If you've recently added a PostCSS plugin that raised this warning, please contact the package author to fix the issue.
+3:03:20 PM [express] GET /api/user 304 in 464ms :: {"id":"21158491","email":"new.normando@gmail.com"…
+3:03:21 PM [express] GET /api/dashboard/stats 500 in 230ms :: {"error":"column reviews.google_profil…
+3:03:21 PM [express] GET /api/dashboard/recent-reviews 500 in 445ms :: {"error":"column reviews.goog…
+3:03:27 PM [express] GET /api/user 304 in 445ms :: {"id":"21158491","email":"new.normando@gmail.com"…
+3:03:27 PM [express] GET /api/google-profiles 200 in 233ms :: []
+3:03:28 PM [express] GET /api/companies/1 200 in 450ms :: {"id":1,"name":"Alphaclin-zona-norte","slu…
+3:03:39 PM [express] GET /api/companies 304 in 875ms :: [{"id":1,"name":"Alphaclin-zona-norte","slug…
+3:04:09 PM [express] GET /api/connect/google 302 in 638ms
+3:04:50 PM [express] GET /api/companies 304 in 981ms :: [{"id":1,"name":"Alphaclin-zona-norte","slug…
+3:04:54 PM [express] GET /api/companies/1 200 in 215ms :: {"id":1,"name":"Alphaclin-zona-norte","slu…
+3:04:54 PM [express] GET /api/google-profiles 200 in 656ms :: []
+3:05:27 PM [express] GET /api/user 304 in 439ms :: {"id":"21158491","email":"new.normando@gmail.com"…
+3:05:27 PM [express] GET /api/companies/1 304 in 217ms :: {"id":1,"name":"Alphaclin-zona-norte","slu…
+3:05:27 PM [express] GET /api/google-profiles 304 in 449ms :: []
+3:10:59 PM [vite] hmr update /src/pages/companies.tsx, /src/index.css?v=K_zOBogC5MLLZ7eUq2QgP, /src/pages/company-settings.tsx, /src/pages/templates.tsx
+3:11:00 PM [vite] hmr update /src/pages/company-settings.tsx, /src/index.css?v=K_zOBogC5MLLZ7eUq2QgP
+3:12:29 PM [express] GET /api/user 304 in 432ms :: {"id":"21158491","email":"new.normando@gmail.com"…
+3:12:29 PM [express] GET /api/companies/1 304 in 214ms :: {"id":1,"name":"Alphaclin-zona-norte","slu…
+3:12:29 PM [express] GET /api/google-profiles 304 in 445ms :: []
+3:18:08 PM [vite] hmr update /src/pages/reviews.tsx, /src/index.css?v=K_zOBogC5MLLZ7eUq2QgP
+3:18:11 PM [vite] Internal server error: Failed to resolve import "@/components/ui/use-toast" from "client/src/pages/reviews.tsx". Does the file exist?
+  Plugin: vite:import-analysis
+  File: /home/runner/workspace/client/src/pages/reviews.tsx:3:25
+  18 |  import { useState } from "react";
+  19 |  import { useQuery, useQueryClient } from "@tanstack/react-query";
+  20 |  import { useToast } from "@/components/ui/use-toast";
+     |                            ^
+  21 |  import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+  22 |  import { Input } from "@/components/ui/input";
+      at TransformPluginContext._formatError (/home/runner/workspace/node_modules/vite/dist/node/chunks/dep-D_zLpgQd.js:49258:41)
+      at TransformPluginContext.error (/home/runner/workspace/node_modules/vite/dist/node/chunks/dep-D_zLpgQd.js:49253:16)
+      at normalizeUrl (/home/runner/workspace/node_modules/vite/dist/node/chunks/dep-D_zLpgQd.js:64306:23)
+      at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+      at async <anonymous> (/home/runner/workspace/node_modules/vite/dist/node/chunks/dep-D_zLpgQd.js:64438:39)
+      at async Promise.all (index 5)
+      at async TransformPluginContext.transform (/home/runner/workspace/node_modules/vite/dist/node/chunks/dep-D_zLpgQd.js:64365:7)
+      at async PluginContainer.transform (/home/runner/workspace/node_modules/vite/dist/node/chunks/dep-D_zLpgQd.js:49099:18)
+      at async loadAndTransform (/home/runner/workspace/node_modules/vite/dist/node/chunks/dep-D_zLpgQd.js:51977:27)
+      at async viteTransformMiddleware (/home/runner/workspace/node_modules/vite/dist/node/chunks/dep-D_zLpgQd.js:62105:24)

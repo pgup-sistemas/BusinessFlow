@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useToast } from "@/components/ui/use-toast";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -30,19 +31,21 @@ export default function Reviews() {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [priorityFilter, setPriorityFilter] = useState("all");
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
 
   const { data: reviews, isLoading } = useQuery<ReviewWithRelations[]>({
     queryKey: ["/api/reviews", { status: statusFilter, priority: priorityFilter, search: searchTerm }],
   });
 
   const filteredReviews = reviews?.filter((review) => {
-    const matchesSearch = !searchTerm || 
+    const matchesSearch = !searchTerm ||
       review.authorName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       review.text?.toLowerCase().includes(searchTerm.toLowerCase());
-    
+
     const matchesStatus = statusFilter === "all" || review.status === statusFilter;
     const matchesPriority = priorityFilter === "all" || review.priority === priorityFilter;
-    
+
     return matchesSearch && matchesStatus && matchesPriority;
   });
 
@@ -52,9 +55,46 @@ export default function Reviews() {
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Avaliações</h1>
           <p className="text-muted-foreground">
-            Gerencie todas as avaliações recebidas do Google Business
+            Gerencie e processe avaliações do Google Business
           </p>
         </div>
+        <Button
+          onClick={() => {
+            const pendingReviewIds = reviews
+              ?.filter((r: any) => r.status === "pending")
+              .map((r: any) => r.id) || [];
+
+            if (pendingReviewIds.length === 0) {
+              toast({
+                title: "Nenhuma avaliação pendente",
+                description: "Não há avaliações pendentes para processar",
+              });
+              return;
+            }
+
+            fetch("/api/reviews/batch-process", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ reviewIds: pendingReviewIds }),
+            })
+              .then(() => {
+                queryClient.invalidateQueries({ queryKey: ["/api/reviews"] });
+                toast({
+                  title: "Processamento iniciado",
+                  description: `${pendingReviewIds.length} avaliações sendo processadas`,
+                });
+              })
+              .catch(() => {
+                toast({
+                  title: "Erro",
+                  description: "Falha ao processar avaliações em lote",
+                  variant: "destructive",
+                });
+              });
+          }}
+        >
+          Processar Todas Pendentes
+        </Button>
       </div>
 
       <Card>
@@ -118,7 +158,7 @@ export default function Reviews() {
               key={review.id}
               className="border-l-4 hover-elevate"
               style={{
-                borderLeftColor: 
+                borderLeftColor:
                   review.priority === "URGENT" ? "hsl(var(--destructive))" :
                   review.priority === "HIGH" ? "hsl(var(--chart-3))" :
                   review.priority === "NORMAL" ? "hsl(var(--chart-4))" :
@@ -151,7 +191,7 @@ export default function Reviews() {
                     <p className="text-sm leading-relaxed">{review.text}</p>
                   </div>
                 )}
-                
+
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
                     <span className="text-muted-foreground">Sentimento:</span>

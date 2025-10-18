@@ -308,20 +308,34 @@ export async function syncReviews(googleProfile: any) {
       const existingReview = await storage.getReviewByExternalId(review.reviewId);
 
       if (!existingReview) {
+        const rating = review.starRating === "FIVE" ? 5 :
+                      review.starRating === "FOUR" ? 4 :
+                      review.starRating === "THREE" ? 3 :
+                      review.starRating === "TWO" ? 2 : 1;
+        
+        const reviewText = review.comment || "";
+        
+        // Determine priority based on rating
+        let priority = "NORMAL";
+        if (rating <= 2) priority = "URGENT";
+        else if (rating === 3) priority = "HIGH";
+        else if (rating === 4) priority = "NORMAL";
+        else priority = "LOW";
+
         // Create new review
         await storage.createReview({
           companyId: googleProfile.companyId,
           googleProfileId: googleProfile.id,
-          externalId: review.reviewId,
+          googleReviewId: review.reviewId,
           authorName: review.reviewer?.displayName || "Anônimo",
-          rating: review.starRating === "FIVE" ? 5 :
-                  review.starRating === "FOUR" ? 4 :
-                  review.starRating === "THREE" ? 3 :
-                  review.starRating === "TWO" ? 2 : 1,
-          comment: review.comment || "",
-          reviewDate: new Date(review.updateTime),
+          rating,
+          text: reviewText,
+          languageDetected: "pt-BR", // Will be detected by AI later
+          sentimentScore: null, // Will be calculated by AI later
+          priority,
+          requiresHumanReview: rating <= 2, // Reviews with 1-2 stars require human review
+          reviewCreatedAt: new Date(review.updateTime),
           status: "pending",
-          priority: review.starRating === "ONE" || review.starRating === "TWO" ? "high" : "medium",
         });
       }
     }
