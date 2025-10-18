@@ -135,6 +135,11 @@ export class DatabaseStorage implements IStorage {
     return profile;
   }
 
+  async createGoogleProfile(profileData: InsertGoogleProfile): Promise<GoogleProfile> {
+    const [profile] = await db.insert(googleProfiles).values(profileData).returning();
+    return profile;
+  }
+
   async updateGoogleProfile(id: number, data: Partial<GoogleProfile>): Promise<GoogleProfile> {
     const [profile] = await db
       .update(googleProfiles)

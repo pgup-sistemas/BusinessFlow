@@ -74,6 +74,8 @@ export const googleProfiles = pgTable("google_profiles", {
   googleLocationId: varchar("google_location_id", { length: 255 }).notNull(),
   oauthRefreshTokenEncrypted: text("oauth_refresh_token_encrypted"),
   oauthAccessTokenEncrypted: text("oauth_access_token_encrypted"),
+  accessToken: text("access_token"), // Token de acesso atual
+  refreshToken: text("refresh_token"), // Token de refresh
   tokenExpiry: timestamp("token_expiry"),
   isActive: boolean("is_active").default(true),
   lastSyncAt: timestamp("last_sync_at"),

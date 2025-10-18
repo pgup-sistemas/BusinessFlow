@@ -5,8 +5,11 @@ import { insertCompanySchema, insertTemplateSchema, insertGoogleProfileSchema } 
 import { generateResponse, detectSentiment, detectLanguage } from "./services/geminiService";
 import { moderateResponse, calculatePriority } from "./services/moderationService";
 import { findBestTemplate, replacePlaceholders } from "./services/templateMatcher";
+import googleOAuthRouter from "./googleOAuth";
 
 export function registerRoutes(app: Express) {
+  // Registra rotas OAuth2 do Google
+  app.use("/api", googleOAuthRouter);
   app.get("/api/user", isAuthenticated, async (req, res) => {
     const user = req.user as any;
     if (!user || !user.claims) {
