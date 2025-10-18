@@ -4,33 +4,48 @@ import type { Request, Response } from "express";
 
 const router = Router();
 
-// Configuração OAuth2 do Google
-const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID || "37890042726-6qv6v1bkkpfjg19jj5fgquodu0rojbrv.apps.googleusercontent.com";
-const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET || "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";
-const REDIRECT_URI = process.env.GOOGLE_REDIRECT_URI || "https://591e496f-c30b-4cb8-876f-8d6553abdc19-00-2qu6m3hoow55.worf.replit.dev/api/oauth2/callback";
-
 const SCOPES = [
   "https://www.googleapis.com/auth/business.manage",
   "https://www.googleapis.com/auth/userinfo.email",
   "https://www.googleapis.com/auth/userinfo.profile"
 ];
 
+// Default fallback credentials
+const DEFAULT_CLIENT_ID = process.env.GOOGLE_CLIENT_ID || "37890042726-6qv6v1bkkpfjg19jj5fgquodu0rojbrv.apps.googleusercontent.com";
+const DEFAULT_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET || "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";
+const DEFAULT_REDIRECT_URI = process.env.GOOGLE_REDIRECT_URI || "https://591e496f-c30b-4cb8-876f-8d6553abdc19-00-2qu6m3hoow55.worf.replit.dev/api/oauth2/callback";
+
 // Inicia o fluxo OAuth2
-router.get("/connect/google", (req: Request, res: Response) => {
+router.get("/connect/google", async (req: Request, res: Response) => {
   const companyId = req.query.company_id as string;
 
   if (!companyId) {
     return res.status(400).json({ error: "company_id is required" });
   }
 
+  // Get company-specific OAuth credentials
+  const company = await storage.getCompany(parseInt(companyId));
+  if (!company) {
+    return res.status(404).json({ error: "Company not found" });
+  }
+
+  const clientId = company.googleClientId || DEFAULT_CLIENT_ID;
+  const redirectUri = company.googleRedirectUri || DEFAULT_REDIRECT_URI;
+
+  if (!clientId) {
+    return res.status(400).json({ 
+      error: "Google OAuth credentials not configured for this company. Please configure them in Company Settings." 
+    });
+  }
+
   const authUrl = new URL("https://accounts.google.com/o/oauth2/v2/auth");
-  authUrl.searchParams.set("client_id", GOOGLE_CLIENT_ID);
-  authUrl.searchParams.set("redirect_uri", REDIRECT_URI);
+  authUrl.searchParams.set("client_id", clientId);
+  authUrl.searchParams.set("redirect_uri", redirectUri);
   authUrl.searchParams.set("response_type", "code");
   authUrl.searchParams.set("scope", SCOPES.join(" "));
   authUrl.searchParams.set("access_type", "offline");
   authUrl.searchParams.set("prompt", "consent");
-  authUrl.searchParams.set("state", companyId); // Passa companyId no state
+  authUrl.searchParams.set("state", companyId);
 
   res.redirect(authUrl.toString());
 });
@@ -45,15 +60,25 @@ router.get("/oauth2/callback", async (req: Request, res: Response) => {
   }
 
   try {
+    // Get company-specific credentials
+    const company = await storage.getCompany(companyId);
+    if (!company) {
+      return res.status(404).send("Company not found");
+    }
+
+    const clientId = company.googleClientId || DEFAULT_CLIENT_ID;
+    const clientSecret = company.googleClientSecret || DEFAULT_CLIENT_SECRET;
+    const redirectUri = company.googleRedirectUri || DEFAULT_REDIRECT_URI;
+
     // Troca o code pelos tokens
     const tokenResponse = await fetch("https://oauth2.googleapis.com/token", {
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
       body: new URLSearchParams({
         code: code as string,
-        client_id: GOOGLE_CLIENT_ID,
-        client_secret: GOOGLE_CLIENT_SECRET,
-        redirect_uri: REDIRECT_URI,
+        client_id: clientId,
+        client_secret: clientSecret,
+        redirect_uri: redirectUri,
         grant_type: "authorization_code",
       }),
     });

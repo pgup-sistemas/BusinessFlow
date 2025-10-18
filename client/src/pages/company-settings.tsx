@@ -61,6 +61,9 @@ export default function CompanySettings() {
       name: company.name,
       slug: company.slug,
       isActive: company.isActive,
+      googleClientId: company.googleClientId || "",
+      googleClientSecret: company.googleClientSecret || "",
+      googleRedirectUri: company.googleRedirectUri || "",
       settings: company.settings || {},
     } : undefined,
   });
@@ -207,6 +210,7 @@ export default function CompanySettings() {
       <Tabs defaultValue="general" className="space-y-6">
         <TabsList>
           <TabsTrigger value="general">Geral</TabsTrigger>
+          <TabsTrigger value="oauth">Credenciais OAuth</TabsTrigger>
           <TabsTrigger value="google">Google Business</TabsTrigger>
           <TabsTrigger value="danger">Zona de Perigo</TabsTrigger>
         </TabsList>
@@ -285,6 +289,106 @@ export default function CompanySettings() {
           </Card>
         </TabsContent>
 
+        <TabsContent value="oauth" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Credenciais OAuth2 do Google</CardTitle>
+              <CardDescription>
+                Configure as credenciais específicas desta empresa para acessar o Google Business Profile.
+                Estas credenciais são obtidas no Google Cloud Console.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                  <FormField
+                    control={form.control}
+                    name="googleClientId"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Client ID</FormLabel>
+                        <FormControl>
+                          <Input 
+                            {...field} 
+                            placeholder="123456789-abc.apps.googleusercontent.com"
+                            value={field.value || ""}
+                          />
+                        </FormControl>
+                        <FormDescription>
+                          ID do cliente OAuth2 obtido no Google Cloud Console
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="googleClientSecret"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Client Secret</FormLabel>
+                        <FormControl>
+                          <Input 
+                            {...field} 
+                            type="password"
+                            placeholder="GOCSPX-xxxxxxxxxxxxx"
+                            value={field.value || ""}
+                          />
+                        </FormControl>
+                        <FormDescription>
+                          Chave secreta do cliente OAuth2 (será armazenada de forma segura)
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="googleRedirectUri"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Redirect URI</FormLabel>
+                        <FormControl>
+                          <Input 
+                            {...field} 
+                            placeholder="https://seu-dominio.com/api/oauth2/callback"
+                            value={field.value || ""}
+                          />
+                        </FormControl>
+                        <FormDescription>
+                          URI de redirecionamento configurado no Google Cloud Console
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <div className="rounded-lg border p-4 bg-muted/50">
+                    <h4 className="font-semibold mb-2">Como obter essas credenciais:</h4>
+                    <ol className="text-sm space-y-1 list-decimal list-inside text-muted-foreground">
+                      <li>Acesse o Google Cloud Console</li>
+                      <li>Crie ou selecione um projeto</li>
+                      <li>Ative a API "Google My Business"</li>
+                      <li>Vá em "Credenciais" e crie credenciais OAuth 2.0</li>
+                      <li>Configure a URI de redirecionamento</li>
+                      <li>Copie o Client ID e Client Secret</li>
+                    </ol>
+                  </div>
+
+                  <div className="flex justify-end">
+                    <Button type="submit" disabled={updateMutation.isPending}>
+                      <Save className="mr-2 h-4 w-4" />
+                      {updateMutation.isPending ? "Salvando..." : "Salvar Credenciais"}
+                    </Button>
+                  </div>
+                </form>
+              </Form>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
         <TabsContent value="google" className="space-y-6">
           <Card>
             <CardHeader>
@@ -294,7 +398,18 @@ export default function CompanySettings() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <Button onClick={handleConnectGoogle} className="w-full">
+              {!company.googleClientId && (
+                <div className="rounded-lg border border-amber-500/50 bg-amber-50 dark:bg-amber-950/20 p-4 mb-4">
+                  <p className="text-sm text-amber-800 dark:text-amber-200">
+                    ⚠️ Configure primeiro as credenciais OAuth2 na aba "Credenciais OAuth" antes de conectar.
+                  </p>
+                </div>
+              )}
+              <Button 
+                onClick={handleConnectGoogle} 
+                className="w-full"
+                disabled={!company.googleClientId}
+              >
                 <Link2 className="mr-2 h-4 w-4" />
                 Conectar Nova Conta Google
               </Button>

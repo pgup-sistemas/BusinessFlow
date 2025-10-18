@@ -1,4 +1,3 @@
-
 import { db } from "./db";
 import { sql } from "drizzle-orm";
 
@@ -53,6 +52,19 @@ async function migrate() {
     `);
 
     console.log("✅ Removed old profile_id column from reviews");
+
+    // Add migration for OAuth credentials
+    await db.execute(sql`
+      ALTER TABLE companies 
+      ADD COLUMN IF NOT EXISTS settings JSONB DEFAULT '{}'::jsonb,
+      ADD COLUMN IF NOT EXISTS is_active BOOLEAN DEFAULT true,
+      ADD COLUMN IF NOT EXISTS google_client_id VARCHAR(255),
+      ADD COLUMN IF NOT EXISTS google_client_secret VARCHAR(255),
+      ADD COLUMN IF NOT EXISTS google_redirect_uri VARCHAR(500)
+    `);
+
+    console.log("✅ Added Google OAuth credentials columns to companies table");
+
 
     console.log("✅ Migration completed successfully!");
   } catch (error) {
