@@ -145,12 +145,14 @@ export async function setupAuth(app: Express) {
     
     // Check if strategy already exists
     try {
-      // @ts-ignore - accessing private property
-      if (passport._strategy(strategyName)) {
+      const existingStrategy = passport._strategies[strategyName];
+      if (existingStrategy) {
+        console.log(`✅ Estratégia já existe: ${strategyName}`);
         return strategyName;
       }
     } catch (e) {
       // Strategy doesn't exist, create it
+      console.log(`⚠️ Erro ao verificar estratégia: ${e}`);
     }
 
     console.log(`📝 Registrando estratégia dinamicamente para: ${hostname}`);
@@ -164,6 +166,7 @@ export async function setupAuth(app: Express) {
       verify,
     );
     passport.use(strategy);
+    console.log(`✅ Estratégia registrada com sucesso: ${strategyName}`);
     return strategyName;
   };
 
@@ -179,38 +182,55 @@ export async function setupAuth(app: Express) {
 
   app.get("/api/callback", async (req, res, next) => {
     console.log(`🔙 Callback OAuth - Hostname: ${req.hostname}`);
-    const strategyName = await ensureStrategy(req.hostname);
-    console.log(`🔙 Estratégia buscada: ${strategyName}`);
-    passport.authenticate(strategyName, {
-      successReturnToOrRedirect: "/",
-      failureRedirect: "/api/login",
-      failureMessage: true,
-    }, (err, user, info) => {
-      if (err) {
-        console.error("❌ Erro no callback OAuth:", err);
-        return res.status(500).send(`
-          <html>
-            <body style="font-family: Arial, sans-serif; padding: 20px;">
-              <h1>❌ Erro de Autenticação</h1>
-              <p><strong>Erro:</strong> ${err.message}</p>
-              <p>Verifique se as variáveis de ambiente REPL_ID e REPLIT_DOMAINS estão configuradas corretamente.</p>
-              <a href="/api/login">Tentar novamente</a>
-            </body>
-          </html>
-        `);
-      }
-      if (!user) {
-        console.error("❌ Falha na autenticação:", info);
-        return res.redirect("/api/login");
-      }
-      req.logIn(user, (err) => {
+    console.log(`🔙 Query params:`, req.query);
+    
+    try {
+      const strategyName = await ensureStrategy(req.hostname);
+      console.log(`🔙 Estratégia buscada: ${strategyName}`);
+      
+      passport.authenticate(strategyName, {
+        successReturnToOrRedirect: "/",
+        failureRedirect: "/api/login",
+        failureMessage: true,
+      }, (err, user, info) => {
+        console.log(`🔙 Resultado da autenticação - Erro: ${err}, User: ${!!user}, Info:`, info);
+        
         if (err) {
-          console.error("❌ Erro ao fazer login:", err);
-          return next(err);
+          console.error("❌ Erro no callback OAuth:", err);
+          console.error("❌ Stack trace:", err.stack);
+          return res.status(500).send(`
+            <html>
+              <body style="font-family: Arial, sans-serif; padding: 20px;">
+                <h1>❌ Erro de Autenticação</h1>
+                <p><strong>Erro:</strong> ${err.message}</p>
+                <p><strong>Detalhes:</strong> ${err.stack}</p>
+                <p>Verifique se as variáveis de ambiente REPL_ID e REPLIT_DOMAINS estão configuradas corretamente.</p>
+                <a href="/api/login">Tentar novamente</a>
+              </body>
+            </html>
+          `);
         }
-        return res.redirect("/");
-      });
-    })(req, res, next);
+        
+        if (!user) {
+          console.error("❌ Falha na autenticação - sem usuário:", info);
+          return res.redirect("/api/login");
+        }
+        
+        console.log(`✅ Usuário autenticado:`, user);
+        req.logIn(user, (loginErr) => {
+          if (loginErr) {
+            console.error("❌ Erro ao fazer login:", loginErr);
+            console.error("❌ Stack trace:", loginErr.stack);
+            return next(loginErr);
+          }
+          console.log(`✅ Login realizado com sucesso! Redirecionando...`);
+          return res.redirect("/");
+        });
+      })(req, res, next);
+    } catch (error) {
+      console.error("❌ Erro fatal no callback:", error);
+      res.status(500).send("Erro ao processar callback OAuth");
+    }
   });
 
   app.get("/api/logout", (req, res) => {
