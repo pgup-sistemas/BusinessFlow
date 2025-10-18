@@ -65,9 +65,10 @@ export function registerRoutes(app: Express) {
         googleAccountId: userInfo.id,
         googleLocationId: location.name,
         profileName: location.title || userInfo.name,
-        accessToken: tokens.access_token,
-        refreshToken: tokens.refresh_token || "",
+        oauthAccessTokenEncrypted: tokens.access_token,
+        oauthRefreshTokenEncrypted: tokens.refresh_token || "",
         tokenExpiry: new Date(Date.now() + (tokens.expires_in || 3600) * 1000),
+        isActive: true,
         lastSyncAt: null,
       });
 

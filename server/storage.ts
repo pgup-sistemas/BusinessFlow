@@ -236,7 +236,7 @@ export class DatabaseStorage implements IStorage {
         conditions.push(eq(reviews.priority, filters.priority));
       }
 
-      let query = db
+      const baseQuery = db
         .select({
           id: reviews.id,
           googleProfileId: reviews.googleProfileId,
@@ -253,21 +253,19 @@ export class DatabaseStorage implements IStorage {
           errorMessage: reviews.errorMessage,
           createdAt: reviews.createdAt,
           updatedAt: reviews.updatedAt,
-          profile: {
-            id: googleProfiles.id,
-            profileName: googleProfiles.profileName,
-            company: companies,
-          },
+          profileId: googleProfiles.id,
+          profileName: googleProfiles.profileName,
+          companyName: companies.name,
         })
         .from(reviews)
         .leftJoin(googleProfiles, eq(reviews.googleProfileId, googleProfiles.id))
         .leftJoin(companies, eq(reviews.companyId, companies.id));
 
       if (conditions.length > 0) {
-        query = query.where(and(...conditions));
+        return await baseQuery.where(and(...conditions)).orderBy(desc(reviews.createdAt)).limit(100);
       }
 
-      return await query.orderBy(desc(reviews.createdAt)).limit(100);
+      return await baseQuery.orderBy(desc(reviews.createdAt)).limit(100);
     } catch (error) {
       console.error("Error fetching reviews:", error);
       return [];
@@ -287,7 +285,7 @@ export class DatabaseStorage implements IStorage {
   async getReviewByExternalId(externalId: string): Promise<Review | undefined> {
     const [review] = await db.select()
       .from(reviews)
-      .where(eq(reviews.externalId, externalId))
+      .where(eq(reviews.googleReviewId, externalId))
       .limit(1);
     return review;
   }
@@ -296,7 +294,7 @@ export class DatabaseStorage implements IStorage {
     return await db.select()
       .from(reviews)
       .where(eq(reviews.companyId, companyId))
-      .orderBy(desc(reviews.reviewDate));
+      .orderBy(desc(reviews.reviewCreatedAt));
   }
 
   async createReview(data: Partial<InsertReview> & {
@@ -340,8 +338,6 @@ export class DatabaseStorage implements IStorage {
 
   // Responses
   async getResponses(filters?: { status?: string; moderationStatus?: string }): Promise<Response[]> {
-    let query = db.select().from(responses);
-
     const conditions = [];
     if (filters?.status) {
       conditions.push(eq(responses.status, filters.status));
@@ -351,10 +347,10 @@ export class DatabaseStorage implements IStorage {
     }
 
     if (conditions.length > 0) {
-      query = query.where(and(...conditions));
+      return await db.select().from(responses).where(and(...conditions)).orderBy(desc(responses.createdAt)).limit(100);
     }
 
-    return await query.orderBy(desc(responses.createdAt)).limit(100);
+    return await db.select().from(responses).orderBy(desc(responses.createdAt)).limit(100);
   }
 
   async getResponse(id: number): Promise<Response | undefined> {
@@ -391,18 +387,13 @@ export class DatabaseStorage implements IStorage {
         sentAt: responses.sentAt,
         createdAt: responses.createdAt,
         updatedAt: responses.updatedAt,
-        review: {
-          id: reviews.id,
-          authorName: reviews.authorName,
-          rating: reviews.rating,
-          text: reviews.text,
-          reviewCreatedAt: reviews.reviewCreatedAt,
-          profile: {
-            id: googleProfiles.id,
-            profileName: googleProfiles.profileName,
-            company: companies,
-          },
-        },
+        reviewAuthorName: reviews.authorName,
+        reviewRating: reviews.rating,
+        reviewText: reviews.text,
+        reviewCreatedAt: reviews.reviewCreatedAt,
+        profileId: googleProfiles.id,
+        profileName: googleProfiles.profileName,
+        companyName: companies.name,
       })
       .from(responses)
       .leftJoin(reviews, eq(responses.reviewId, reviews.id))
