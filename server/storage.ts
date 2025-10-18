@@ -227,46 +227,51 @@ export class DatabaseStorage implements IStorage {
 
   // Reviews
   async getReviews(filters?: { status?: string; priority?: string }): Promise<any[]> {
-    const conditions = [];
-    if (filters?.status) {
-      conditions.push(eq(reviews.status, filters.status));
-    }
-    if (filters?.priority) {
-      conditions.push(eq(reviews.priority, filters.priority));
-    }
+    try {
+      const conditions = [];
+      if (filters?.status) {
+        conditions.push(eq(reviews.status, filters.status));
+      }
+      if (filters?.priority) {
+        conditions.push(eq(reviews.priority, filters.priority));
+      }
 
-    let query = db
-      .select({
-        id: reviews.id,
-        googleProfileId: reviews.googleProfileId,
-        companyId: reviews.companyId,
-        googleReviewId: reviews.googleReviewId,
-        authorName: reviews.authorName,
-        rating: reviews.rating,
-        text: reviews.text,
-        reviewCreatedAt: reviews.reviewCreatedAt,
-        sentimentScore: reviews.sentimentScore,
-        languageDetected: reviews.languageDetected,
-        priority: reviews.priority,
-        status: reviews.status,
-        errorMessage: reviews.errorMessage,
-        createdAt: reviews.createdAt,
-        updatedAt: reviews.updatedAt,
-        profile: {
-          id: googleProfiles.id,
-          profileName: googleProfiles.profileName,
-          company: companies,
-        },
-      })
-      .from(reviews)
-      .leftJoin(googleProfiles, eq(reviews.googleProfileId, googleProfiles.id))
-      .leftJoin(companies, eq(reviews.companyId, companies.id));
+      let query = db
+        .select({
+          id: reviews.id,
+          googleProfileId: reviews.googleProfileId,
+          companyId: reviews.companyId,
+          googleReviewId: reviews.googleReviewId,
+          authorName: reviews.authorName,
+          rating: reviews.rating,
+          text: reviews.text,
+          reviewCreatedAt: reviews.reviewCreatedAt,
+          sentimentScore: reviews.sentimentScore,
+          languageDetected: reviews.languageDetected,
+          priority: reviews.priority,
+          status: reviews.status,
+          errorMessage: reviews.errorMessage,
+          createdAt: reviews.createdAt,
+          updatedAt: reviews.updatedAt,
+          profile: {
+            id: googleProfiles.id,
+            profileName: googleProfiles.profileName,
+            company: companies,
+          },
+        })
+        .from(reviews)
+        .leftJoin(googleProfiles, eq(reviews.googleProfileId, googleProfiles.id))
+        .leftJoin(companies, eq(reviews.companyId, companies.id));
 
-    if (conditions.length > 0) {
-      query = query.where(and(...conditions));
+      if (conditions.length > 0) {
+        query = query.where(and(...conditions));
+      }
+
+      return await query.orderBy(desc(reviews.createdAt)).limit(100);
+    } catch (error) {
+      console.error("Error fetching reviews:", error);
+      return [];
     }
-
-    return await query.orderBy(desc(reviews.createdAt)).limit(100);
   }
 
   async getReview(id: number): Promise<Review | undefined> {

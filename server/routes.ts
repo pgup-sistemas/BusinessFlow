@@ -540,9 +540,9 @@ export function registerRoutes(app: Express) {
 
   app.get("/api/dashboard/stats", isAuthenticated, async (_req, res) => {
     try {
-      const reviews = await storage.getReviews({});
-      const responses = await storage.getResponses({});
-      const companies = await storage.getCompanies();
+      const reviews = await storage.getReviews({}).catch(() => []);
+      const responses = await storage.getResponses({}).catch(() => []);
+      const companies = await storage.getCompanies().catch(() => []);
 
       const totalReviews = reviews.length;
       const completedResponses = responses.filter((r) => r.status === "sent").length;
@@ -562,16 +562,18 @@ export function registerRoutes(app: Express) {
         avgRating: parseFloat(avgRating.toFixed(2)),
       });
     } catch (error: any) {
+      console.error("Dashboard stats error:", error);
       res.status(500).json({ error: error.message });
     }
   });
 
   app.get("/api/dashboard/recent-reviews", isAuthenticated, async (_req, res) => {
     try {
-      const reviews = await storage.getReviews({});
+      const reviews = await storage.getReviews({}).catch(() => []);
       const recent = reviews.slice(0, 10);
       res.json(recent);
     } catch (error: any) {
+      console.error("Recent reviews error:", error);
       res.status(500).json({ error: error.message });
     }
   });
