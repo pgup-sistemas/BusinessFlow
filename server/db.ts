@@ -7,10 +7,11 @@ import * as schema from "@shared/schema";
 // Configuração do WebSocket para Neon
 neonConfig.webSocketConstructor = ws;
 
-// Desabilitar pipeline e TLS para evitar problemas de certificado em desenvolvimento
+// Configuração SSL para ambiente Replit (desenvolvimento e produção)
+const isProduction = process.env.NODE_ENV === 'production';
 neonConfig.pipelineConnect = false;
 neonConfig.pipelineTLS = false;
-neonConfig.useSecureWebSocket = false;
+neonConfig.useSecureWebSocket = isProduction;
 
 if (!process.env.DATABASE_URL) {
   throw new Error(

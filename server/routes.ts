@@ -145,18 +145,18 @@ export function registerRoutes(app: Express) {
   });
 
   // Google Profile routes
-  app.get("/api/google-profiles", async (req, res) => {
+  app.get("/api/google-profiles", isAuthenticated, async (req, res) => {
     const profiles = await storage.getGoogleProfiles();
     res.json(profiles);
   });
 
-  app.delete("/api/google-profiles/:id", async (req, res) => {
+  app.delete("/api/google-profiles/:id", isAuthenticated, async (req, res) => {
     const id = parseInt(req.params.id);
     await storage.deleteGoogleProfile(id);
     res.json({ success: true });
   });
 
-  app.post("/api/google-profiles/:id/sync", async (req, res) => {
+  app.post("/api/google-profiles/:id/sync", isAuthenticated, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       const profile = await storage.getGoogleProfileById(id);
