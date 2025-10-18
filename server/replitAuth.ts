@@ -31,7 +31,19 @@ if (!process.env.SESSION_SECRET) {
 
 console.log("✅ Configuração OAuth validada com sucesso");
 console.log(`📍 REPL_ID: ${process.env.REPL_ID.substring(0, 8)}...`);
-console.log(`🌐 Domínios: ${process.env.REPLIT_DOMAINS}`);
+console.log(`🌐 Domínios configurados: ${process.env.REPLIT_DOMAINS}`);
+
+// Parse domains - remove protocol and paths
+const rawDomains = process.env.REPLIT_DOMAINS!.split(",");
+const parsedDomains = rawDomains.map(domain => {
+  // Remove https://, http://, and any path
+  return domain
+    .replace(/^https?:\/\//, '')
+    .replace(/\/.*$/, '')
+    .trim();
+});
+
+console.log(`🔍 Domínios parseados: ${parsedDomains.join(", ")}`);
 
 const getOidcConfig = memoize(
   async () => {
@@ -110,8 +122,8 @@ export async function setupAuth(app: Express) {
     verified(null, user);
   };
 
-  for (const domain of process.env
-    .REPLIT_DOMAINS!.split(",")) {
+  for (const domain of parsedDomains) {
+    console.log(`📝 Registrando estratégia para domínio: ${domain}`);
     const strategy = new Strategy(
       {
         name: `replitauth:${domain}`,
@@ -128,6 +140,8 @@ export async function setupAuth(app: Express) {
   passport.deserializeUser((user: Express.User, cb) => cb(null, user));
 
   app.get("/api/login", (req, res, next) => {
+    console.log(`🔐 Tentativa de login - Hostname: ${req.hostname}`);
+    console.log(`🔐 Estratégia buscada: replitauth:${req.hostname}`);
     passport.authenticate(`replitauth:${req.hostname}`, {
       prompt: "login consent",
       scope: ["openid", "email", "profile", "offline_access"],
@@ -135,6 +149,8 @@ export async function setupAuth(app: Express) {
   });
 
   app.get("/api/callback", (req, res, next) => {
+    console.log(`🔙 Callback OAuth - Hostname: ${req.hostname}`);
+    console.log(`🔙 Estratégia buscada: replitauth:${req.hostname}`);
     passport.authenticate(`replitauth:${req.hostname}`, {
       successReturnToOrRedirect: "/",
       failureRedirect: "/api/login",
