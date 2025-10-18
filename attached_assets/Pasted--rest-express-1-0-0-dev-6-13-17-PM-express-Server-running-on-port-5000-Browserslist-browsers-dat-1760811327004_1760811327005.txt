@@ -1,0 +1,24 @@
+> rest-express@1.0.0 dev
+6:13:17 PM [express] Server running on port 5000
+Browserslist: browsers data (caniuse-lite) is 12 months old. Please run:
+  npx update-browserslist-db@latest
+  Why you should do it regularly: https://github.com/browserslist/update-db#readme
+
+A PostCSS plugin did not pass the `from` option to `postcss.parse`. This may cause imported assets to be incorrectly transformed. If you've recently added a PostCSS plugin that raised this warning, please contact the package author to fix the issue.
+6:13:36 PM [express] GET /api/user 401 in 291ms :: {"message":"Unauthorized"}
+ResponseBodyError: server responded with an error in the response body
+    at checkOAuthBodyError (/home/runner/workspace/node_modules/oauth4webapi/src/index.ts:2820:13)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async processGenericAccessTokenResponse (/home/runner/workspace/node_modules/oauth4webapi/src/index.ts:3555:3)
+    at async processAuthorizationCodeOAuth2Response (/home/runner/workspace/node_modules/oauth4webapi/src/index.ts:4121:18)
+    at async Module.authorizationCodeGrant (/home/runner/workspace/node_modules/openid-client/src/index.ts:3407:14)
+    at async Strategy.authorizationCodeGrant (/home/runner/workspace/node_modules/openid-client/src/passport.ts:579:22)
+6:13:42 PM [express] GET /api/callback 400 in 612ms
+ResponseBodyError: server responded with an error in the response body
+    at checkOAuthBodyError (/home/runner/workspace/node_modules/oauth4webapi/src/index.ts:2820:13)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async processGenericAccessTokenResponse (/home/runner/workspace/node_modules/oauth4webapi/src/index.ts:3555:3)
+    at async processAuthorizationCodeOAuth2Response (/home/runner/workspace/node_modules/oauth4webapi/src/index.ts:4121:18)
+    at async Module.authorizationCodeGrant (/home/runner/workspace/node_modules/openid-client/src/index.ts:3407:14)
+    at async Strategy.authorizationCodeGrant (/home/runner/workspace/node_modules/openid-client/src/passport.ts:579:22)
+6:13:48 PM [express] GET /api/callback 400 in 436ms
