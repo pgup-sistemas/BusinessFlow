@@ -4,13 +4,13 @@ import { drizzle } from 'drizzle-orm/neon-serverless';
 import ws from "ws";
 import * as schema from "@shared/schema";
 
+// Configuração do WebSocket para Neon
 neonConfig.webSocketConstructor = ws;
 
-// Configuração SSL para ambiente Replit
+// Desabilitar pipeline e TLS para evitar problemas de certificado em desenvolvimento
 neonConfig.pipelineConnect = false;
-neonConfig.wsProxy = (host) => `${host}?sslmode=require`;
-neonConfig.useSecureWebSocket = true;
 neonConfig.pipelineTLS = false;
+neonConfig.useSecureWebSocket = false;
 
 if (!process.env.DATABASE_URL) {
   throw new Error(

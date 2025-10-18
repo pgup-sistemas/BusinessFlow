@@ -1,0 +1,74 @@
+
+> rest-express@1.0.0 dev
+⚠️  GEMINI_API_KEY not set - AI response generation will not work
+5:35:35 PM [express] Server running on port 5000
+Browserslist: browsers data (caniuse-lite) is 12 months old. Please run:
+  npx update-browserslist-db@latest
+  Why you should do it regularly: https://github.com/browserslist/update-db#readme
+
+A PostCSS plugin did not pass the `from` option to `postcss.parse`. This may cause imported assets to be incorrectly transformed. If you've recently added a PostCSS plugin that raised this warning, please contact the package author to fix the issue.
+5:35:39 PM [express] GET /api/user 401 in 3ms :: {"message":"Unauthorized"}
+5:35:42 PM [express] GET /api/user 401 in 6ms :: {"message":"Unauthorized"}
+5:36:17 PM [express] GET /api/user 401 in 10ms :: {"message":"Unauthorized"}
+5:37:05 PM [express] GET /api/login 302 in 20ms
+
+file:///home/runner/workspace/node_modules/@neondatabase/serverless/index.mjs:1345
+o?t(o):n(u)},"cb"),s=new r(function(o,u){n=o,t=u}).catch(o=>{throw Error.captureStackTrace(
+                                                                         ^
+ErrorEvent {
+  [Symbol(kTarget)]: WebSocket {
+    _events: [Object: null prototype] {
+      error: [Function: onError] {
+        [Symbol(kIsForOnEventAttribute)]: false,
+        [Symbol(kListener)]: [Function (anonymous)]
+      },
+      message: [Function: onMessage] {
+        [Symbol(kIsForOnEventAttribute)]: false,
+        [Symbol(kListener)]: [Function (anonymous)]
+      },
+      close: [Function: onClose] {
+        [Symbol(kIsForOnEventAttribute)]: false,
+        [Symbol(kListener)]: [Function (anonymous)]
+      },
+      open: [Function: onOpen] {
+        [Symbol(kIsForOnEventAttribute)]: false,
+        [Symbol(kListener)]: [Function: handleWebSocketOpen]
+      }
+    },
+    _eventsCount: 4,
+    _maxListeners: undefined,
+    _binaryType: 'arraybuffer',
+    _closeCode: 1006,
+    _closeFrameReceived: false,
+    _closeFrameSent: false,
+    _closeMessage: Buffer(0) [Uint8Array] [],
+    _closeTimer: null,
+    _errorEmitted: true,
+    _extensions: {},
+    _paused: false,
+    _protocol: '',
+    _readyState: 3,
+    _receiver: null,
+    _sender: null,
+    _socket: null,
+    _bufferedAmount: 0,
+    _isServer: false,
+    _redirects: 0,
+    _autoPong: true,
+    _url: 'wss://helium/?sslmode=require',
+    _req: null,
+    [Symbol(shapeMode)]: false,
+    [Symbol(kCapture)]: false
+  },
+  [Symbol(kType)]: 'error',
+  [Symbol(kError)]: Error: self-signed certificate in certificate chain
+      at TLSSocket.onConnectSecure (node:_tls_wrap:1677:34)
+      at TLSSocket.emit (node:events:524:28)
+      at TLSSocket._finishInit (node:_tls_wrap:1076:8)
+      at ssl.onhandshakedone (node:_tls_wrap:862:12) {
+    code: 'SELF_SIGNED_CERT_IN_CHAIN'
+  },
+  [Symbol(kMessage)]: 'self-signed certificate in certificate chain'
+}
+
+Node.js v20.19.3
