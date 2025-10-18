@@ -139,19 +139,49 @@ export async function setupAuth(app: Express) {
   passport.serializeUser((user: Express.User, cb) => cb(null, user));
   passport.deserializeUser((user: Express.User, cb) => cb(null, user));
 
-  app.get("/api/login", (req, res, next) => {
+  // Helper to ensure strategy exists for a hostname
+  const ensureStrategy = async (hostname: string) => {
+    const strategyName = `replitauth:${hostname}`;
+    
+    // Check if strategy already exists
+    try {
+      // @ts-ignore - accessing private property
+      if (passport._strategy(strategyName)) {
+        return strategyName;
+      }
+    } catch (e) {
+      // Strategy doesn't exist, create it
+    }
+
+    console.log(`📝 Registrando estratégia dinamicamente para: ${hostname}`);
+    const strategy = new Strategy(
+      {
+        name: strategyName,
+        config,
+        scope: "openid email profile offline_access",
+        callbackURL: `https://${hostname}/api/callback`,
+      },
+      verify,
+    );
+    passport.use(strategy);
+    return strategyName;
+  };
+
+  app.get("/api/login", async (req, res, next) => {
     console.log(`🔐 Tentativa de login - Hostname: ${req.hostname}`);
-    console.log(`🔐 Estratégia buscada: replitauth:${req.hostname}`);
-    passport.authenticate(`replitauth:${req.hostname}`, {
+    const strategyName = await ensureStrategy(req.hostname);
+    console.log(`🔐 Estratégia buscada: ${strategyName}`);
+    passport.authenticate(strategyName, {
       prompt: "login consent",
       scope: ["openid", "email", "profile", "offline_access"],
     })(req, res, next);
   });
 
-  app.get("/api/callback", (req, res, next) => {
+  app.get("/api/callback", async (req, res, next) => {
     console.log(`🔙 Callback OAuth - Hostname: ${req.hostname}`);
-    console.log(`🔙 Estratégia buscada: replitauth:${req.hostname}`);
-    passport.authenticate(`replitauth:${req.hostname}`, {
+    const strategyName = await ensureStrategy(req.hostname);
+    console.log(`🔙 Estratégia buscada: ${strategyName}`);
+    passport.authenticate(strategyName, {
       successReturnToOrRedirect: "/",
       failureRedirect: "/api/login",
       failureMessage: true,
