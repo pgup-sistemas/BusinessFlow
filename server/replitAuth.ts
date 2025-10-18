@@ -11,19 +11,39 @@ import { storage } from "./storage";
 
 // Validate required environment variables
 if (!process.env.REPL_ID) {
-  console.warn("⚠️  REPL_ID not set - OAuth authentication will not work");
+  console.error("❌ ERRO CRÍTICO: REPL_ID não está configurado!");
+  console.error("Para corrigir:");
+  console.error("1. Acesse a aba 'Secrets' (ícone de cadeado)");
+  console.error("2. Adicione a variável REPL_ID com o valor do ID deste Repl");
+  console.error("3. Reinicie o servidor");
+  throw new Error("REPL_ID é obrigatório para autenticação OAuth");
 }
 
 if (!process.env.REPLIT_DOMAINS) {
-  throw new Error("Environment variable REPLIT_DOMAINS not provided");
+  console.error("❌ ERRO CRÍTICO: REPLIT_DOMAINS não está configurado!");
+  throw new Error("REPLIT_DOMAINS é obrigatório para autenticação OAuth");
 }
+
+if (!process.env.SESSION_SECRET) {
+  console.error("❌ ERRO CRÍTICO: SESSION_SECRET não está configurado!");
+  throw new Error("SESSION_SECRET é obrigatório para sessões");
+}
+
+console.log("✅ Configuração OAuth validada com sucesso");
+console.log(`📍 REPL_ID: ${process.env.REPL_ID.substring(0, 8)}...`);
+console.log(`🌐 Domínios: ${process.env.REPLIT_DOMAINS}`);
 
 const getOidcConfig = memoize(
   async () => {
-    return await client.discovery(
-      new URL(process.env.ISSUER_URL ?? "https://replit.com/oidc"),
-      process.env.REPL_ID!
-    );
+    try {
+      return await client.discovery(
+        new URL(process.env.ISSUER_URL ?? "https://replit.com/oidc"),
+        process.env.REPL_ID!
+      );
+    } catch (error) {
+      console.error("❌ Erro ao descobrir configuração OIDC:", error);
+      throw new Error("Falha na configuração OAuth do Replit");
+    }
   },
   { maxAge: 3600 * 1000 }
 );
@@ -118,6 +138,32 @@ export async function setupAuth(app: Express) {
     passport.authenticate(`replitauth:${req.hostname}`, {
       successReturnToOrRedirect: "/",
       failureRedirect: "/api/login",
+      failureMessage: true,
+    }, (err, user, info) => {
+      if (err) {
+        console.error("❌ Erro no callback OAuth:", err);
+        return res.status(500).send(`
+          <html>
+            <body style="font-family: Arial, sans-serif; padding: 20px;">
+              <h1>❌ Erro de Autenticação</h1>
+              <p><strong>Erro:</strong> ${err.message}</p>
+              <p>Verifique se as variáveis de ambiente REPL_ID e REPLIT_DOMAINS estão configuradas corretamente.</p>
+              <a href="/api/login">Tentar novamente</a>
+            </body>
+          </html>
+        `);
+      }
+      if (!user) {
+        console.error("❌ Falha na autenticação:", info);
+        return res.redirect("/api/login");
+      }
+      req.logIn(user, (err) => {
+        if (err) {
+          console.error("❌ Erro ao fazer login:", err);
+          return next(err);
+        }
+        return res.redirect("/");
+      });
     })(req, res, next);
   });
 
