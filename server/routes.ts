@@ -6,10 +6,79 @@ import { generateResponse, detectSentiment, detectLanguage } from "./services/ge
 import { moderateResponse, calculatePriority } from "./services/moderationService";
 import { findBestTemplate, replacePlaceholders } from "./services/templateMatcher";
 import googleOAuthRouter from "./googleOAuth";
+import { getGoogleAuthUrl, exchangeCodeForTokens, getUserInfo, getBusinessAccounts, getLocations, syncReviews } from "./googleOAuth";
 
 export function registerRoutes(app: Express) {
   // Registra rotas OAuth2 do Google
   app.use("/api", googleOAuthRouter);
+
+  // Google OAuth routes
+  app.get("/api/connect/google", async (req, res) => {
+    const companyId = req.query.company_id as string;
+
+    if (!companyId) {
+      return res.status(400).json({ error: "company_id is required" });
+    }
+
+    const authUrl = getGoogleAuthUrl(companyId);
+    res.redirect(authUrl);
+  });
+
+  app.get("/api/auth/google/callback", async (req, res) => {
+    try {
+      const code = req.query.code as string;
+      const state = req.query.state as string;
+
+      if (!code || !state) {
+        return res.redirect("/companies?error=missing_params");
+      }
+
+      const companyId = parseInt(state);
+      if (isNaN(companyId)) {
+        return res.redirect("/companies?error=invalid_company");
+      }
+
+      // Exchange code for tokens
+      const tokens = await exchangeCodeForTokens(code);
+
+      // Get user info and business profile
+      const userInfo = await getUserInfo(tokens.access_token);
+      const accounts = await getBusinessAccounts(tokens.access_token);
+
+      if (!accounts || accounts.length === 0) {
+        return res.redirect(`/companies/${companyId}/settings?error=no_accounts`);
+      }
+
+      // For now, use the first account and location
+      const account = accounts[0];
+      const locations = await getLocations(tokens.access_token, account.name);
+
+      if (!locations || locations.length === 0) {
+        return res.redirect(`/companies/${companyId}/settings?error=no_locations`);
+      }
+
+      const location = locations[0];
+
+      // Save to database
+      await storage.createGoogleProfile({
+        companyId,
+        googleAccountId: userInfo.id,
+        googleLocationId: location.name,
+        profileName: location.title || userInfo.name,
+        accessToken: tokens.access_token,
+        refreshToken: tokens.refresh_token || "",
+        tokenExpiry: new Date(Date.now() + (tokens.expires_in || 3600) * 1000),
+        lastSyncAt: null,
+      });
+
+      res.redirect(`/companies/${companyId}/settings?success=connected`);
+    } catch (error) {
+      console.error("Error in Google OAuth callback:", error);
+      res.redirect("/companies?error=auth_failed");
+    }
+  });
+
+
   app.get("/api/user", isAuthenticated, async (req, res) => {
     const user = req.user as any;
     if (!user || !user.claims) {
@@ -74,21 +143,32 @@ export function registerRoutes(app: Express) {
     }
   });
 
-  app.get("/api/google-profiles", isAuthenticated, async (_req, res) => {
-    try {
-      const profiles = await storage.getGoogleProfiles();
-      res.json(profiles);
-    } catch (error: any) {
-      res.status(500).json({ error: error.message });
-    }
+  // Google Profile routes
+  app.get("/api/google-profiles", async (req, res) => {
+    const profiles = await storage.getGoogleProfiles();
+    res.json(profiles);
   });
 
-  app.delete("/api/google-profiles/:id", isAuthenticated, async (req, res) => {
+  app.delete("/api/google-profiles/:id", async (req, res) => {
+    const id = parseInt(req.params.id);
+    await storage.deleteGoogleProfile(id);
+    res.json({ success: true });
+  });
+
+  app.post("/api/google-profiles/:id/sync", async (req, res) => {
     try {
-      await storage.deleteGoogleProfile(parseInt(req.params.id));
-      res.status(204).send();
-    } catch (error: any) {
-      res.status(500).json({ error: error.message });
+      const id = parseInt(req.params.id);
+      const profile = await storage.getGoogleProfileById(id);
+
+      if (!profile) {
+        return res.status(404).json({ error: "Profile not found" });
+      }
+
+      const reviewCount = await syncReviews(profile);
+      res.json({ success: true, reviewCount });
+    } catch (error) {
+      console.error("Sync error:", error);
+      res.status(500).json({ error: "Failed to sync reviews" });
     }
   });
 
@@ -201,7 +281,7 @@ export function registerRoutes(app: Express) {
       await storage.updateReview(review.id, { status: "processing" });
 
       const language = review.languageDetected || "pt-BR";
-      
+
       const templates = await storage.getTemplates();
       const companyTemplates = templates.filter(
         (t) => t.companyId === review.companyId && t.isActive

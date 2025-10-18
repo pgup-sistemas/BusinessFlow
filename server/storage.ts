@@ -16,6 +16,7 @@ import {
   type InsertTemplate,
   type Review,
   type Response,
+  type InsertReview,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, sql } from "drizzle-orm";
@@ -36,6 +37,7 @@ export interface IStorage {
   // Google Profiles
   getGoogleProfiles(): Promise<GoogleProfile[]>;
   getGoogleProfile(id: number): Promise<GoogleProfile | undefined>;
+  getGoogleProfileById(id: number): Promise<GoogleProfile | undefined>;
   createGoogleProfile(profile: InsertGoogleProfile): Promise<GoogleProfile>;
   updateGoogleProfile(id: number, data: Partial<GoogleProfile>): Promise<GoogleProfile>;
   deleteGoogleProfile(id: number): Promise<void>;
@@ -51,6 +53,8 @@ export interface IStorage {
   getReviews(filters?: { status?: string; priority?: string }): Promise<Review[]>;
   getReview(id: number): Promise<Review | undefined>;
   getReviewByGoogleId(googleReviewId: string): Promise<Review | undefined>;
+  getReviewByExternalId(externalId: string): Promise<Review | undefined>;
+  getReviewsByCompany(companyId: number): Promise<Review[]>;
   createReview(review: Partial<Review>): Promise<Review>;
   updateReview(id: number, data: Partial<Review>): Promise<Review>;
 
@@ -140,6 +144,14 @@ export class DatabaseStorage implements IStorage {
     const [profile] = await db.select().from(googleProfiles).where(eq(googleProfiles.id, id));
     return profile;
   }
+
+  async getGoogleProfileById(id: number): Promise<GoogleProfile | undefined> {
+    const [profile] = await db.select()
+      .from(googleProfiles)
+      .where(eq(googleProfiles.id, id))
+      .limit(1);
+    return profile;
+  },
 
   async createGoogleProfile(profileData: InsertGoogleProfile): Promise<GoogleProfile> {
     const [profile] = await db.insert(googleProfiles).values(profileData).returning();
@@ -266,10 +278,25 @@ export class DatabaseStorage implements IStorage {
     return review;
   }
 
-  async createReview(reviewData: Partial<Review>): Promise<Review> {
-    const [review] = await db.insert(reviews).values(reviewData as any).returning();
+  async createReview(data: InsertReview): Promise<Review> {
+    const [review] = await db.insert(reviews).values(data).returning();
     return review;
-  }
+  },
+
+  async getReviewByExternalId(externalId: string): Promise<Review | undefined> {
+    const [review] = await db.select()
+      .from(reviews)
+      .where(eq(reviews.externalId, externalId))
+      .limit(1);
+    return review;
+  },
+
+  async getReviewsByCompany(companyId: number): Promise<Review[]> {
+    return await db.select()
+      .from(reviews)
+      .where(eq(reviews.companyId, companyId))
+      .orderBy(desc(reviews.reviewDate));
+  },
 
   async updateReview(id: number, data: Partial<Review>): Promise<Review> {
     const [review] = await db

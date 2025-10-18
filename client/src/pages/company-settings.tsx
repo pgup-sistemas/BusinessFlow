@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { useParams, useNavigate } from "wouter";
+import { useParams, useLocation } from "wouter";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -44,7 +44,7 @@ interface GoogleProfileWithCompany extends GoogleProfile {
 
 export default function CompanySettings() {
   const { id } = useParams<{ id: string }>();
-  const [, navigate] = useNavigate();
+  const [, navigate] = useLocation();
   const { toast } = useToast();
 
   const { data: company, isLoading } = useQuery<Company>({
@@ -136,6 +136,30 @@ export default function CompanySettings() {
     if (id) {
       window.location.href = `/api/connect/google?company_id=${id}`;
     }
+  };
+
+  const syncReviewsMutation = useMutation({
+    mutationFn: async (profileId: number) => {
+      return await apiRequest("POST", `/api/google-profiles/${profileId}/sync`, undefined);
+    },
+    onSuccess: (data: any) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/google-profiles"] });
+      toast({
+        title: "Sucesso",
+        description: `${data.reviewCount} avaliações sincronizadas`,
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Erro",
+        description: "Falha ao sincronizar avaliações",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleSyncReviews = (profileId: number) => {
+    syncReviewsMutation.mutate(profileId);
   };
 
   const companyProfiles = googleProfiles?.filter(p => p.companyId === parseInt(id || "0")) || [];
@@ -314,6 +338,14 @@ export default function CompanySettings() {
                         )}
                       </div>
                       <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleSyncReviews(profile.id)}
+                          disabled={!isTokenValid}
+                        >
+                          Sincronizar
+                        </Button>
                         {!isTokenValid && (
                           <Button
                             variant="outline"

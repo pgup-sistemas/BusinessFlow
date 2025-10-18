@@ -1,4 +1,3 @@
-
 import { Router } from "express";
 import { storage } from "./storage";
 import type { Request, Response } from "express";
@@ -19,7 +18,7 @@ const SCOPES = [
 // Inicia o fluxo OAuth2
 router.get("/connect/google", (req: Request, res: Response) => {
   const companyId = req.query.company_id as string;
-  
+
   if (!companyId) {
     return res.status(400).json({ error: "company_id is required" });
   }
@@ -87,13 +86,13 @@ router.get("/oauth2/callback", async (req: Request, res: Response) => {
 
     let googleAccountId = "";
     let googleLocationId = "";
-    
+
     if (accountsResponse.ok) {
       const accountsData = await accountsResponse.json();
       if (accountsData.accounts && accountsData.accounts.length > 0) {
         const account = accountsData.accounts[0];
         googleAccountId = account.name.split("/")[1]; // Extrai o ID da string "accounts/123456"
-        
+
         // Busca locations desta conta
         const locationsResponse = await fetch(
           `https://mybusinessbusinessinformation.googleapis.com/v1/${account.name}/locations`,
@@ -101,7 +100,7 @@ router.get("/oauth2/callback", async (req: Request, res: Response) => {
             headers: { Authorization: `Bearer ${access_token}` },
           }
         );
-        
+
         if (locationsResponse.ok) {
           const locationsData = await locationsResponse.json();
           if (locationsData.locations && locationsData.locations.length > 0) {
@@ -137,5 +136,181 @@ router.get("/oauth2/callback", async (req: Request, res: Response) => {
     res.status(500).send(`Error connecting to Google: ${error.message}`);
   }
 });
+
+// Adicionar funções auxiliares para OAuth
+export function getGoogleAuthUrl(companyId: string): string {
+  const params = new URLSearchParams({
+    client_id: process.env.GOOGLE_CLIENT_ID || "",
+    redirect_uri: process.env.GOOGLE_REDIRECT_URI || "",
+    response_type: "code",
+    scope: SCOPES.join(" "),
+    access_type: "offline",
+    prompt: "consent",
+    state: companyId,
+  });
+
+  return `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;
+}
+
+export async function exchangeCodeForTokens(code: string) {
+  const response = await fetch("https://oauth2.googleapis.com/token", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded",
+    },
+    body: new URLSearchParams({
+      code,
+      client_id: process.env.GOOGLE_CLIENT_ID || "",
+      client_secret: process.env.GOOGLE_CLIENT_SECRET || "",
+      redirect_uri: process.env.GOOGLE_REDIRECT_URI || "",
+      grant_type: "authorization_code",
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Token exchange failed: ${response.statusText}`);
+  }
+
+  return await response.json();
+}
+
+export async function getUserInfo(accessToken: string) {
+  const response = await fetch("https://www.googleapis.com/oauth2/v2/userinfo", {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to get user info: ${response.statusText}`);
+  }
+
+  return await response.json();
+}
+
+export async function getBusinessAccounts(accessToken: string) {
+  const response = await fetch(
+    "https://mybusinessaccountmanagement.googleapis.com/v1/accounts",
+    {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error(`Failed to get business accounts: ${response.statusText}`);
+  }
+
+  const data = await response.json();
+  return data.accounts || [];
+}
+
+export async function getLocations(accessToken: string, accountName: string) {
+  const response = await fetch(
+    `https://mybusinessbusinessinformation.googleapis.com/v1/${accountName}/locations`,
+    {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error(`Failed to get locations: ${response.statusText}`);
+  }
+
+  const data = await response.json();
+  return data.locations || [];
+}
+
+export async function refreshAccessToken(refreshToken: string) {
+  const response = await fetch("https://oauth2.googleapis.com/token", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded",
+    },
+    body: new URLSearchParams({
+      refresh_token: refreshToken,
+      client_id: process.env.GOOGLE_CLIENT_ID || "",
+      client_secret: process.env.GOOGLE_CLIENT_SECRET || "",
+      grant_type: "refresh_token",
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Token refresh failed: ${response.statusText}`);
+  }
+
+  return await response.json();
+}
+
+export async function syncReviews(googleProfile: any) {
+  try {
+    // Refresh token if needed
+    let accessToken = googleProfile.oauthAccessTokenEncrypted;
+    if (new Date(googleProfile.tokenExpiry) < new Date()) {
+      const tokens = await refreshAccessToken(googleProfile.oauthRefreshTokenEncrypted);
+      accessToken = tokens.access_token;
+
+      // Update token in database
+      await storage.updateGoogleProfile(googleProfile.id, {
+        oauthAccessTokenEncrypted: tokens.access_token,
+        tokenExpiry: new Date(Date.now() + (tokens.expires_in || 3600) * 1000),
+      });
+    }
+
+    // Fetch reviews from Google
+    const response = await fetch(
+      `https://mybusiness.googleapis.com/v4/${googleProfile.googleLocationId}/reviews`,
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch reviews: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    const reviews = data.reviews || [];
+
+    // Process each review
+    for (const review of reviews) {
+      // Check if review already exists
+      const existingReview = await storage.getReviewByExternalId(review.reviewId);
+
+      if (!existingReview) {
+        // Create new review
+        await storage.createReview({
+          companyId: googleProfile.companyId,
+          googleProfileId: googleProfile.id,
+          externalId: review.reviewId,
+          authorName: review.reviewer?.displayName || "Anônimo",
+          rating: review.starRating === "FIVE" ? 5 : 
+                  review.starRating === "FOUR" ? 4 :
+                  review.starRating === "THREE" ? 3 :
+                  review.starRating === "TWO" ? 2 : 1,
+          comment: review.comment || "",
+          reviewDate: new Date(review.updateTime),
+          status: "pending",
+          priority: review.starRating === "ONE" || review.starRating === "TWO" ? "high" : "medium",
+        });
+      }
+    }
+
+    // Update last sync time
+    await storage.updateGoogleProfile(googleProfile.id, {
+      lastSyncAt: new Date(),
+    });
+
+    return reviews.length;
+  } catch (error) {
+    console.error("Error syncing reviews:", error);
+    throw error;
+  }
+}
 
 export default router;
