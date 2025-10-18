@@ -257,8 +257,12 @@ export const templatesRelations = relations(templates, ({ one, many }) => ({
 
 export const reviewsRelations = relations(reviews, ({ one, many }) => ({
   profile: one(googleProfiles, {
-    fields: [reviews.profileId],
+    fields: [reviews.googleProfileId],
     references: [googleProfiles.id],
+  }),
+  company: one(companies, {
+    fields: [reviews.companyId],
+    references: [companies.id],
   }),
   responses: many(responses),
 }));
