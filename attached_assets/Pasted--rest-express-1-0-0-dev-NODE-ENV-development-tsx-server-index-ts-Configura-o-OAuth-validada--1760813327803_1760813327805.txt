@@ -1,0 +1,98 @@
+
+> rest-express@1.0.0 dev
+> NODE_ENV=development tsx server/index.ts
+
+✅ Configuração OAuth validada com sucesso
+📍 REPL_ID: a37b4347...
+🌐 Domínios configurados: a37b4347-f60b-4fcd-96c8-8a2b10fe1842-00-11331awz1atsq.spock.replit.dev,workspace.luizaclementina.repl.co
+🔍 Domínios parseados: a37b4347-f60b-4fcd-96c8-8a2b10fe1842-00-11331awz1atsq.spock.replit.dev, workspace.luizaclementina.repl.co
+📝 Registrando estratégia para domínio: a37b4347-f60b-4fcd-96c8-8a2b10fe1842-00-11331awz1atsq.spock.replit.dev
+📝 Registrando estratégia para domínio: workspace.luizaclementina.repl.co
+6:46:03 PM [express] Server running on port 5000
+Browserslist: browsers data (caniuse-lite) is 12 months old. Please run:
+  npx update-browserslist-db@latest
+  Why you should do it regularly: https://github.com/browserslist/update-db#readme
+
+A PostCSS plugin did not pass the `from` option to `postcss.parse`. This may cause imported assets to be incorrectly transformed. If you've recently added a PostCSS plugin that raised this warning, please contact the package author to fix the issue.
+6:46:22 PM [express] GET /api/user 401 in 318ms :: {"message":"Unauthorized"}
+🔐 Tentativa de login - Hostname: a37b4347-f60b-4fcd-96c8-8a2b10fe1842-00-11331awz1atsq.spock.replit.dev
+✅ Estratégia já existe: replitauth:a37b4347-f60b-4fcd-96c8-8a2b10fe1842-00-11331awz1atsq.spock.replit.dev
+🔐 Estratégia buscada: replitauth:a37b4347-f60b-4fcd-96c8-8a2b10fe1842-00-11331awz1atsq.spock.replit.dev
+6:46:31 PM [express] GET /api/login 302 in 302ms
+🔙 Callback OAuth - Hostname: a37b4347-f60b-4fcd-96c8-8a2b10fe1842-00-11331awz1atsq.spock.replit.dev
+🔙 Query params: {
+  code: 'e-DVNpwMdawTQRINuqHwlc8Y-tI1eK0ImOpdsOGaHGI',
+  iss: 'https://replit.com/oidc'
+}
+🔙 Headers: {
+  host: 'a37b4347-f60b-4fcd-96c8-8a2b10fe1842-00-11331awz1atsq.spock.replit.dev',
+  'user-agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36',
+  accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
+  'accept-encoding': 'identity, gzip, deflate, br, zstd',
+  'accept-language': 'pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7',
+  cookie: 'connect.sid=s%3A-ClhsuCa92XEd8e6eVTtq475TKPeUVJH.kjzGgWqCC2%2FceoSR%2FXC9x%2BKFHxvqSZW1PkiHKIr961g',
+  referer: 'https://replit.com/',
+  'sec-ch-ua': '"Google Chrome";v="141", "Not?A_Brand";v="8", "Chromium";v="141"',
+  'sec-ch-ua-mobile': '?0',
+  'sec-ch-ua-platform': '"Linux"',
+  'sec-fetch-dest': 'iframe',
+  'sec-fetch-mode': 'navigate',
+  'sec-fetch-site': 'cross-site',
+  'sec-fetch-storage-access': 'active',
+  'upgrade-insecure-requests': '1',
+  'x-forwarded-for': '200.140.41.219, 10.82.5.49',
+  'x-forwarded-proto': 'https',
+  'x-replit-user-bio': '',
+  'x-replit-user-id': '',
+  'x-replit-user-name': '',
+  'x-replit-user-profile-image': '',
+  'x-replit-user-roles': '',
+  'x-replit-user-teams': '',
+  'x-replit-user-url': ''
+}
+✅ Estratégia já existe: replitauth:a37b4347-f60b-4fcd-96c8-8a2b10fe1842-00-11331awz1atsq.spock.replit.dev
+🔙 Estratégia buscada: replitauth:a37b4347-f60b-4fcd-96c8-8a2b10fe1842-00-11331awz1atsq.spock.replit.dev
+🔙 Iniciando passport.authenticate...
+🔙 Executando authenticator...
+🔙 Authenticator executado
+6:47:36 PM [express] GET /api/user 401 in 292ms :: {"message":"Unauthorized"}
+🔐 Tentativa de login - Hostname: a37b4347-f60b-4fcd-96c8-8a2b10fe1842-00-11331awz1atsq.spock.replit.dev
+✅ Estratégia já existe: replitauth:a37b4347-f60b-4fcd-96c8-8a2b10fe1842-00-11331awz1atsq.spock.replit.dev
+🔐 Estratégia buscada: replitauth:a37b4347-f60b-4fcd-96c8-8a2b10fe1842-00-11331awz1atsq.spock.replit.dev
+6:47:40 PM [express] GET /api/login 302 in 290ms
+🔙 Callback OAuth - Hostname: a37b4347-f60b-4fcd-96c8-8a2b10fe1842-00-11331awz1atsq.spock.replit.dev
+🔙 Query params: {
+  code: '210D5GkG3nj5Gsi1fOzr0YihRx7hdYu8Pe4aU2qKPtu',
+  iss: 'https://replit.com/oidc'
+}
+🔙 Headers: {
+  host: 'a37b4347-f60b-4fcd-96c8-8a2b10fe1842-00-11331awz1atsq.spock.replit.dev',
+  'user-agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36',
+  accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
+  'accept-encoding': 'gzip, deflate, br, zstd',
+  'accept-language': 'pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7',
+  cookie: 'connect.sid=s%3A-ClhsuCa92XEd8e6eVTtq475TKPeUVJH.kjzGgWqCC2%2FceoSR%2FXC9x%2BKFHxvqSZW1PkiHKIr961g',
+  referer: 'https://replit.com/',
+  'sec-ch-ua': '"Google Chrome";v="141", "Not?A_Brand";v="8", "Chromium";v="141"',
+  'sec-ch-ua-mobile': '?0',
+  'sec-ch-ua-platform': '"Linux"',
+  'sec-fetch-dest': 'document',
+  'sec-fetch-mode': 'navigate',
+  'sec-fetch-site': 'cross-site',
+  'sec-fetch-user': '?1',
+  'upgrade-insecure-requests': '1',
+  'x-forwarded-for': '200.140.41.219, 10.82.3.150',
+  'x-forwarded-proto': 'https',
+  'x-replit-user-bio': '',
+  'x-replit-user-id': '',
+  'x-replit-user-name': '',
+  'x-replit-user-profile-image': '',
+  'x-replit-user-roles': '',
+  'x-replit-user-teams': '',
+  'x-replit-user-url': ''
+}
+✅ Estratégia já existe: replitauth:a37b4347-f60b-4fcd-96c8-8a2b10fe1842-00-11331awz1atsq.spock.replit.dev
+🔙 Estratégia buscada: replitauth:a37b4347-f60b-4fcd-96c8-8a2b10fe1842-00-11331awz1atsq.spock.replit.dev
+🔙 Iniciando passport.authenticate...
+🔙 Executando authenticator...
+🔙 Authenticator executado
