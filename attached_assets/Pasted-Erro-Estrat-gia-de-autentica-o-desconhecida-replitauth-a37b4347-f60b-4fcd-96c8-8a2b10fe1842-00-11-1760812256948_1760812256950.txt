@@ -1,0 +1,29 @@
+Erro: Estratégia de autenticação desconhecida "replitauth:a37b4347-f60b-4fcd-96c8-8a2b10fe1842-00-11331awz1atsq.spock.replit.dev" 
+    na tentativa (/home/runner/workspace/node_modules/passport/lib/middleware/authenticate.js:193:39) 
+    na autenticação (/home/runner/workspace/node_modules/passport/lib/middleware/authenticate.js:379:7) 
+    em <anonymous> (/home/runner/workspace/server/replitAuth.ts:167:6) 
+    em Layer.handle [como handle_request] (/home/runner/workspace/node_modules/express/lib/router/layer.js:95:5) 
+    na próxima (/home/runner/workspace/node_modules/express/lib/router/route.js:149:13) 
+    em Route.dispatch (/home/runner/workspace/node_modules/express/lib/router/route.js:119:3) 
+    em Layer.handle [como handle_request] (/home/runner/workspace/node_modules/express/lib/router/layer.js:95:5) 
+    em /home/runner/workspace/node_modules/express/lib/router/index.js:284:15 
+    em Function.process_params (/home/runner/workspace/node_modules/express/lib/router/index.js:346:12) 
+    em next (/home/runner/workspace/node_modules/express/lib/router/index.js:280:10) 
+    em strategy.pass (/home/runner/workspace/node_modules/passport/lib/middleware/authenticate.js:355:9) 
+    em SessionStrategy.authenticate (/home/runner/workspace/node_modules/passport/lib/strategies/session.js:126:10) 
+    na tentativa (/home/runner/workspace/node_modules/passport/lib/middleware/authenticate.js:378:16) 
+    na autenticação (/home/runner/workspace/node_modules/passport/lib/middleware/authenticate.js:379:7) 
+    em Layer.handle [como handle_request] (/home/runner/workspace/node_modules/express/lib/router/layer.js:95:5) 
+    em trim_prefix (/home/runner/workspace/node_modules/express/lib/router/index.js:328:13) 
+    em /home/runner/workspace/node_modules/express/lib/router/index.js:286:9 
+    em Function.process_params (/home/runner/workspace/node_modules/express/lib/router/index.js:346:12) 
+    em next (/home/runner/workspace/node_modules/express/lib/router/index.js:280:10) 
+    em initialize (/home/runner/workspace/node_modules/passport/lib/middleware/initialize.js:98:5) 
+    em Layer.handle [como handle_request] (/home/runner/workspace/node_modules/express/lib/router/layer.js:95:5) 
+    em trim_prefix (/home/runner/workspace/node_modules/express/lib/router/index.js:328:13) 
+    em /home/runner/workspace/node_modules/express/lib/router/index.js:286:9 
+    em Function.process_params (/home/runner/workspace/node_modules/express/lib/router/index.js:346:12) 
+    em seguida (/home/runner/workspace/node_modules/express/lib/router/index.js:280:10) 
+    em /home/runner/workspace/node_modules/express-session/index.js:514:7
+    em /home/runner/workspace/node_modules/connect-pg-simple/index.js:370:18 
+    em process.processTicksAndRejections (node:internal/process/task_queues:82:21)
