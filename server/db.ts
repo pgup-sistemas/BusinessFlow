@@ -11,7 +11,11 @@ neonConfig.webSocketConstructor = ws;
 const isProduction = process.env.NODE_ENV === 'production';
 neonConfig.pipelineConnect = false;
 neonConfig.pipelineTLS = false;
-neonConfig.useSecureWebSocket = isProduction;
+neonConfig.useSecureWebSocket = true; // Always use secure WebSocket
+neonConfig.fetchEndpoint = (host) => {
+  // Force HTTPS for all database operations
+  return `https://${host}`;
+};
 
 if (!process.env.DATABASE_URL) {
   throw new Error(

@@ -48,13 +48,19 @@ console.log(`🔍 Domínios parseados: ${parsedDomains.join(", ")}`);
 const getOidcConfig = memoize(
   async () => {
     try {
-      return await client.discovery(
+      console.log("🔍 Descobrindo configuração OIDC...");
+      const config = await client.discovery(
         new URL(process.env.ISSUER_URL ?? "https://replit.com/oidc"),
-        process.env.REPL_ID!
+        process.env.REPL_ID!,
+        undefined,
+        { execute: [client.allowInsecureRequests] } // Allow HTTP for development
       );
-    } catch (error) {
+      console.log("✅ Configuração OIDC descoberta com sucesso");
+      return config;
+    } catch (error: any) {
       console.error("❌ Erro ao descobrir configuração OIDC:", error);
-      throw new Error("Falha na configuração OAuth do Replit");
+      console.error("❌ Stack trace:", error.stack);
+      throw new Error(`Falha na configuração OAuth do Replit: ${error.message}`);
     }
   },
   { maxAge: 3600 * 1000 }
