@@ -1,6 +1,5 @@
-
 import { useState } from "react";
-import { useParams, useLocation } from "wouter";
+import { useLocation, useParams } from "wouter";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -237,7 +236,7 @@ export default function CompanySettings() {
                       </FormItem>
                     )}
                   />
-                  
+
                   <FormField
                     control={form.control}
                     name="slug"
@@ -315,7 +314,7 @@ export default function CompanySettings() {
               <CardContent className="space-y-4">
                 {companyProfiles.map((profile) => {
                   const isTokenValid = profile.tokenExpiry && new Date(profile.tokenExpiry) > new Date();
-                  
+
                   return (
                     <div
                       key={profile.id}

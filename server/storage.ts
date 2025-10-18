@@ -151,7 +151,7 @@ export class DatabaseStorage implements IStorage {
       .where(eq(googleProfiles.id, id))
       .limit(1);
     return profile;
-  },
+  }
 
   async createGoogleProfile(profileData: InsertGoogleProfile): Promise<GoogleProfile> {
     const [profile] = await db.insert(googleProfiles).values(profileData).returning();
@@ -281,7 +281,7 @@ export class DatabaseStorage implements IStorage {
   async createReview(data: InsertReview): Promise<Review> {
     const [review] = await db.insert(reviews).values(data).returning();
     return review;
-  },
+  }
 
   async getReviewByExternalId(externalId: string): Promise<Review | undefined> {
     const [review] = await db.select()
@@ -289,14 +289,14 @@ export class DatabaseStorage implements IStorage {
       .where(eq(reviews.externalId, externalId))
       .limit(1);
     return review;
-  },
+  }
 
   async getReviewsByCompany(companyId: number): Promise<Review[]> {
     return await db.select()
       .from(reviews)
       .where(eq(reviews.companyId, companyId))
       .orderBy(desc(reviews.reviewDate));
-  },
+  }
 
   async updateReview(id: number, data: Partial<Review>): Promise<Review> {
     const [review] = await db
