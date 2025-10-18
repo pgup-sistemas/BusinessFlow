@@ -1,0 +1,43 @@
+
+> rest-express@1.0.0 dev
+2:59:36 PM [express] Server running on port 5000
+Browserslist: browsers data (caniuse-lite) is 12 months old. Please run:
+  npx update-browserslist-db@latest
+  Why you should do it regularly: https://github.com/browserslist/update-db#readme
+
+A PostCSS plugin did not pass the `from` option to `postcss.parse`. This may cause imported assets to be incorrectly transformed. If you've recently added a PostCSS plugin that raised this warning, please contact the package author to fix the issue.
+2:59:49 PM [express] GET /api/user 304 in 451ms :: {"id":"21158491","email":"new.normando@gmail.com"…
+2:59:50 PM [express] GET /api/companies 304 in 257ms :: [{"id":1,"name":"Alphaclin-zona-norte","slug…
+2:59:54 PM [express] GET /api/user 304 in 222ms :: {"id":"21158491","email":"new.normando@gmail.com"…
+2:59:54 PM [express] GET /api/dashboard/stats 500 in 149ms :: {"error":"Cannot convert undefined or …
+2:59:54 PM [express] GET /api/dashboard/recent-reviews 500 in 151ms :: {"error":"Cannot convert unde…
+file:///home/runner/workspace/node_modules/@neondatabase/serverless/index.mjs:1345
+o?t(o):n(u)},"cb"),s=new r(function(o,u){n=o,t=u}).catch(o=>{throw Error.captureStackTrace(
+                                                                         ^
+
+error: column google_profiles.access_token does not exist
+    at file:///home/runner/workspace/node_modules/@neondatabase/serverless/index.mjs:1345:74
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async NeonPreparedQuery.execute (/home/runner/workspace/node_modules/src/neon-serverless/session.ts:102:18)
+    at async DatabaseStorage.getGoogleProfiles (/home/runner/workspace/server/storage.ts:121:22)
+    at async <anonymous> (/home/runner/workspace/server/routes.ts:148:22) {
+  length: 127,
+  severity: 'ERROR',
+  code: '42703',
+  detail: undefined,
+  hint: undefined,
+  position: '138',
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: undefined,
+  table: undefined,
+  column: undefined,
+  dataType: undefined,
+  constraint: undefined,
+  file: 'parse_relation.c',
+  line: '3722',
+  routine: 'errorMissingColumn'
+}
+
+Node.js v20.19.3
