@@ -74,8 +74,6 @@ export const googleProfiles = pgTable("google_profiles", {
   googleLocationId: varchar("google_location_id", { length: 255 }).notNull(),
   oauthRefreshTokenEncrypted: text("oauth_refresh_token_encrypted"),
   oauthAccessTokenEncrypted: text("oauth_access_token_encrypted"),
-  accessToken: text("access_token"), // Token de acesso atual
-  refreshToken: text("refresh_token"), // Token de refresh
   tokenExpiry: timestamp("token_expiry"),
   isActive: boolean("is_active").default(true),
   lastSyncAt: timestamp("last_sync_at"),
@@ -141,8 +139,11 @@ export type InsertTemplate = z.infer<typeof insertTemplateSchema>;
 export const reviews = pgTable("reviews", {
   id: serial("id").primaryKey(),
   googleReviewId: varchar("google_review_id", { length: 255 }).notNull().unique(),
-  profileId: integer("profile_id")
+  googleProfileId: integer("google_profile_id")
     .references(() => googleProfiles.id, { onDelete: "cascade" })
+    .notNull(),
+  companyId: integer("company_id")
+    .references(() => companies.id, { onDelete: "cascade" })
     .notNull(),
   authorName: varchar("author_name", { length: 255 }),
   rating: smallint("rating").notNull(),
@@ -159,12 +160,13 @@ export const reviews = pgTable("reviews", {
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 }, (table) => [
-  index("idx_reviews_profile_status").on(table.profileId, table.status),
+  index("idx_reviews_profile_status").on(table.googleProfileId, table.status),
   index("idx_reviews_priority").on(table.priority, table.createdAt),
   index("idx_reviews_google_id").on(table.googleReviewId),
 ]);
 
 export type Review = typeof reviews.$inferSelect;
+export type InsertReview = typeof reviews.$inferInsert;
 
 // Generated Responses table
 export const responses = pgTable("responses", {
@@ -181,6 +183,7 @@ export const responses = pgTable("responses", {
   moderationStatus: varchar("moderation_status", { length: 20 }).default("pending"), // pending, approved, blocked, rejected
   status: varchar("status", { length: 20 }).default("draft"), // draft, sent, failed
   publishedAt: timestamp("published_at"),
+  sentAt: timestamp("sent_at"),
   userFeedback: varchar("user_feedback", { length: 20 }), // good, bad, edited
   editedVersion: text("edited_version"),
   engagementScore: doublePrecision("engagement_score"),

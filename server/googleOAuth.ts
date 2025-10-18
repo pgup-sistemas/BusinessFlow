@@ -289,7 +289,7 @@ export async function syncReviews(googleProfile: any) {
           googleProfileId: googleProfile.id,
           externalId: review.reviewId,
           authorName: review.reviewer?.displayName || "Anônimo",
-          rating: review.starRating === "FIVE" ? 5 : 
+          rating: review.starRating === "FIVE" ? 5 :
                   review.starRating === "FOUR" ? 4 :
                   review.starRating === "THREE" ? 3 :
                   review.starRating === "TWO" ? 2 : 1,

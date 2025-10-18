@@ -312,7 +312,7 @@ export default function CompanySettings() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                {companyProfiles.map((profile) => {
+                {companyProfiles.map((profile: any) => {
                   const isTokenValid = profile.tokenExpiry && new Date(profile.tokenExpiry) > new Date();
 
                   return (
