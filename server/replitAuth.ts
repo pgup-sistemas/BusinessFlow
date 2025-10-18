@@ -183,17 +183,18 @@ export async function setupAuth(app: Express) {
   app.get("/api/callback", async (req, res, next) => {
     console.log(`🔙 Callback OAuth - Hostname: ${req.hostname}`);
     console.log(`🔙 Query params:`, req.query);
+    console.log(`🔙 Headers:`, req.headers);
     
     try {
       const strategyName = await ensureStrategy(req.hostname);
       console.log(`🔙 Estratégia buscada: ${strategyName}`);
+      console.log(`🔙 Iniciando passport.authenticate...`);
       
-      passport.authenticate(strategyName, {
-        successReturnToOrRedirect: "/",
-        failureRedirect: "/api/login",
-        failureMessage: true,
-      }, (err, user, info) => {
-        console.log(`🔙 Resultado da autenticação - Erro: ${err}, User: ${!!user}, Info:`, info);
+      const authenticator = passport.authenticate(strategyName, (err: any, user: any, info: any) => {
+        console.log(`🔙 Callback do authenticate invocado!`);
+        console.log(`🔙 Erro: ${err}`);
+        console.log(`🔙 User: ${JSON.stringify(user)}`);
+        console.log(`🔙 Info:`, info);
         
         if (err) {
           console.error("❌ Erro no callback OAuth:", err);
@@ -216,20 +217,25 @@ export async function setupAuth(app: Express) {
           return res.redirect("/api/login");
         }
         
-        console.log(`✅ Usuário autenticado:`, user);
+        console.log(`✅ Usuário autenticado, fazendo login...`);
         req.logIn(user, (loginErr) => {
           if (loginErr) {
             console.error("❌ Erro ao fazer login:", loginErr);
             console.error("❌ Stack trace:", loginErr.stack);
             return next(loginErr);
           }
-          console.log(`✅ Login realizado com sucesso! Redirecionando...`);
+          console.log(`✅ Login realizado com sucesso! Redirecionando para /`);
           return res.redirect("/");
         });
-      })(req, res, next);
-    } catch (error) {
+      });
+      
+      console.log(`🔙 Executando authenticator...`);
+      authenticator(req, res, next);
+      console.log(`🔙 Authenticator executado`);
+    } catch (error: any) {
       console.error("❌ Erro fatal no callback:", error);
-      res.status(500).send("Erro ao processar callback OAuth");
+      console.error("❌ Stack trace:", error.stack);
+      res.status(500).send(`Erro ao processar callback OAuth: ${error.message}`);
     }
   });
 
