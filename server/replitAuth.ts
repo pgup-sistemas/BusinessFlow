@@ -9,6 +9,11 @@ import memoize from "memoizee";
 import connectPg from "connect-pg-simple";
 import { storage } from "./storage";
 
+// Validate required environment variables
+if (!process.env.REPL_ID) {
+  console.warn("⚠️  REPL_ID not set - OAuth authentication will not work");
+}
+
 if (!process.env.REPLIT_DOMAINS) {
   throw new Error("Environment variable REPLIT_DOMAINS not provided");
 }
