@@ -158,7 +158,7 @@ export default function Templates() {
             <DialogHeader>
               <DialogTitle>{editingTemplate ? "Editar Template" : "Criar Novo Template"}</DialogTitle>
               <DialogDescription>
-                Configure um template com placeholders como {{author_name}}, {{company_name}}, {{rating}}
+                Configure um template com placeholders como {'{'}{'{'} author_name {'}'}{'}'},  {'{'}{'{'} company_name {'}'}{'}'},  {'{'}{'{'} rating {'}'}{'}'} 
               </DialogDescription>
             </DialogHeader>
             <Form {...form}>
