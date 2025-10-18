@@ -52,7 +52,7 @@ const getOidcConfig = memoize(
       const config = await client.discovery(
         new URL(process.env.ISSUER_URL ?? "https://replit.com/oidc"),
         process.env.REPL_ID!,
-        undefined,
+        client.None(), // Public client - no secret, no authentication
         { execute: [client.allowInsecureRequests] } // Allow HTTP for development
       );
       console.log("✅ Configuração OIDC descoberta com sucesso");
