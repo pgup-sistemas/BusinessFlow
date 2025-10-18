@@ -18,6 +18,7 @@ import { Building2, Plus, Settings, Trash2 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { apiRequest, queryClient } from "@/lib/queryClient";
+import { useLocation } from "wouter";
 import type { Company, InsertCompany } from "@shared/schema";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -34,6 +35,7 @@ import {
 
 export default function Companies() {
   const { toast } = useToast();
+  const [, navigate] = useLocation();
   const [dialogOpen, setDialogOpen] = useState(false);
 
   const { data: companies, isLoading } = useQuery<Company[]>({
@@ -200,7 +202,12 @@ export default function Companies() {
                   </span>
                 </div>
                 <div className="flex gap-2">
-                  <Button variant="outline" size="sm" className="flex-1">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="flex-1"
+                    onClick={() => navigate(`/companies/${company.id}/settings`)}
+                  >
                     <Settings className="mr-2 h-4 w-4" />
                     Configurar
                   </Button>

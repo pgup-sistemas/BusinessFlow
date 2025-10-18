@@ -12,6 +12,7 @@ import NotFound from "@/pages/not-found";
 import Landing from "@/pages/landing";
 import Dashboard from "@/pages/dashboard";
 import Companies from "@/pages/companies";
+import CompanySettings from "@/pages/company-settings";
 import GoogleProfiles from "@/pages/google-profiles";
 import Templates from "@/pages/templates";
 import Reviews from "@/pages/reviews";
@@ -30,6 +31,7 @@ function Router() {
         <>
           <Route path="/" component={Dashboard} />
           <Route path="/companies" component={Companies} />
+          <Route path="/companies/:id/settings" component={CompanySettings} />
           <Route path="/google-profiles" component={GoogleProfiles} />
           <Route path="/templates" component={Templates} />
           <Route path="/reviews" component={Reviews} />

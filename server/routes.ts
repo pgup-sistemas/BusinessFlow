@@ -55,6 +55,16 @@ export function registerRoutes(app: Express) {
     }
   });
 
+  app.patch("/api/companies/:id", isAuthenticated, async (req, res) => {
+    try {
+      const validatedData = insertCompanySchema.partial().parse(req.body);
+      const company = await storage.updateCompany(parseInt(req.params.id), validatedData);
+      res.json(company);
+    } catch (error: any) {
+      res.status(400).json({ error: error.message });
+    }
+  });
+
   app.delete("/api/companies/:id", isAuthenticated, async (req, res) => {
     try {
       await storage.deleteCompany(parseInt(req.params.id));
@@ -68,6 +78,15 @@ export function registerRoutes(app: Express) {
     try {
       const profiles = await storage.getGoogleProfiles();
       res.json(profiles);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.delete("/api/google-profiles/:id", isAuthenticated, async (req, res) => {
+    try {
+      await storage.deleteGoogleProfile(parseInt(req.params.id));
+      res.status(204).send();
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }

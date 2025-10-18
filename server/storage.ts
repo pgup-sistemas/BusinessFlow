@@ -30,6 +30,7 @@ export interface IStorage {
   getCompanies(): Promise<Company[]>;
   getCompany(id: number): Promise<Company | undefined>;
   createCompany(company: InsertCompany): Promise<Company>;
+  updateCompany(id: number, data: Partial<InsertCompany>): Promise<Company>;
   deleteCompany(id: number): Promise<void>;
 
   // Google Profiles
@@ -37,6 +38,7 @@ export interface IStorage {
   getGoogleProfile(id: number): Promise<GoogleProfile | undefined>;
   createGoogleProfile(profile: InsertGoogleProfile): Promise<GoogleProfile>;
   updateGoogleProfile(id: number, data: Partial<GoogleProfile>): Promise<GoogleProfile>;
+  deleteGoogleProfile(id: number): Promise<void>;
 
   // Templates
   getTemplates(): Promise<Template[]>;
@@ -97,6 +99,15 @@ export class DatabaseStorage implements IStorage {
     return company;
   }
 
+  async updateCompany(id: number, data: Partial<InsertCompany>): Promise<Company> {
+    const [updated] = await db
+      .update(companies)
+      .set({ ...data, updatedAt: new Date() })
+      .where(eq(companies.id, id))
+      .returning();
+    return updated;
+  }
+
   async deleteCompany(id: number): Promise<void> {
     await db.delete(companies).where(eq(companies.id, id));
   }
@@ -121,17 +132,12 @@ export class DatabaseStorage implements IStorage {
       .from(googleProfiles)
       .leftJoin(companies, eq(googleProfiles.companyId, companies.id))
       .orderBy(desc(googleProfiles.createdAt));
-    
+
     return profiles;
   }
 
   async getGoogleProfile(id: number): Promise<GoogleProfile | undefined> {
     const [profile] = await db.select().from(googleProfiles).where(eq(googleProfiles.id, id));
-    return profile;
-  }
-
-  async createGoogleProfile(profileData: InsertGoogleProfile): Promise<GoogleProfile> {
-    const [profile] = await db.insert(googleProfiles).values(profileData).returning();
     return profile;
   }
 
@@ -147,6 +153,10 @@ export class DatabaseStorage implements IStorage {
       .where(eq(googleProfiles.id, id))
       .returning();
     return profile;
+  }
+
+  async deleteGoogleProfile(id: number): Promise<void> {
+    await db.delete(googleProfiles).where(eq(googleProfiles.id, id));
   }
 
   // Templates
@@ -175,7 +185,7 @@ export class DatabaseStorage implements IStorage {
       .from(templates)
       .leftJoin(companies, eq(templates.companyId, companies.id))
       .orderBy(desc(templates.createdAt));
-    
+
     return result;
   }
 
@@ -273,7 +283,7 @@ export class DatabaseStorage implements IStorage {
   // Responses
   async getResponses(filters?: { status?: string; moderationStatus?: string }): Promise<Response[]> {
     let query = db.select().from(responses);
-    
+
     const conditions = [];
     if (filters?.status) {
       conditions.push(eq(responses.status, filters.status));
@@ -343,7 +353,7 @@ export class DatabaseStorage implements IStorage {
       .where(eq(responses.moderationStatus, "blocked"))
       .orderBy(desc(responses.createdAt))
       .limit(50);
-    
+
     return result;
   }
 }
