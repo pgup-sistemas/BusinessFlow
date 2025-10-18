@@ -136,6 +136,10 @@ export async function setupAuth(app: Express) {
         config,
         scope: "openid email profile offline_access",
         callbackURL: `https://${domain}/api/callback`,
+        client: {
+          client_id: process.env.REPL_ID!,
+          token_endpoint_auth_method: "none", // Public client - no secret needed
+        },
       },
       verify,
     );
@@ -168,6 +172,10 @@ export async function setupAuth(app: Express) {
         config,
         scope: "openid email profile offline_access",
         callbackURL: `https://${hostname}/api/callback`,
+        client: {
+          client_id: process.env.REPL_ID!,
+          token_endpoint_auth_method: "none", // Public client - no secret needed
+        },
       },
       verify,
     );
