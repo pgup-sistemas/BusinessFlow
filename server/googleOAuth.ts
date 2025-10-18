@@ -10,10 +10,10 @@ const SCOPES = [
   "https://www.googleapis.com/auth/userinfo.profile"
 ];
 
-// Default fallback credentials
-const DEFAULT_CLIENT_ID = process.env.GOOGLE_CLIENT_ID || "37890042726-6qv6v1bkkpfjg19jj5fgquodu0rojbrv.apps.googleusercontent.com";
-const DEFAULT_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET || "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";
-const DEFAULT_REDIRECT_URI = process.env.GOOGLE_REDIRECT_URI || "https://591e496f-c30b-4cb8-876f-8d6553abdc19-00-2qu6m3hoow55.worf.replit.dev/api/oauth2/callback";
+// OAuth credentials from environment variables
+const DEFAULT_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
+const DEFAULT_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
+const DEFAULT_REDIRECT_URI = process.env.GOOGLE_REDIRECT_URI;
 
 // Inicia o fluxo OAuth2
 router.get("/connect/google", async (req: Request, res: Response) => {
@@ -40,7 +40,7 @@ router.get("/connect/google", async (req: Request, res: Response) => {
 
   const authUrl = new URL("https://accounts.google.com/o/oauth2/v2/auth");
   authUrl.searchParams.set("client_id", clientId);
-  authUrl.searchParams.set("redirect_uri", redirectUri);
+  authUrl.searchParams.set("redirect_uri", redirectUri || "");
   authUrl.searchParams.set("response_type", "code");
   authUrl.searchParams.set("scope", SCOPES.join(" "));
   authUrl.searchParams.set("access_type", "offline");
@@ -76,9 +76,9 @@ router.get("/oauth2/callback", async (req: Request, res: Response) => {
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
       body: new URLSearchParams({
         code: code as string,
-        client_id: clientId,
-        client_secret: clientSecret,
-        redirect_uri: redirectUri,
+        client_id: clientId || "",
+        client_secret: clientSecret || "",
+        redirect_uri: redirectUri || "",
         grant_type: "authorization_code",
       }),
     });

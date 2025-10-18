@@ -1,11 +1,13 @@
 // Gemini AI service - blueprint:javascript_gemini
 import { GoogleGenAI } from "@google/genai";
 
-if (!process.env.GEMINI_API_KEY) {
-  throw new Error("GEMINI_API_KEY environment variable not set");
-}
+let ai: GoogleGenAI | null = null;
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+if (process.env.GEMINI_API_KEY) {
+  ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+} else {
+  console.warn("⚠️  GEMINI_API_KEY not set - AI response generation will not work");
+}
 
 export interface GenerateResponseParams {
   template: string;
@@ -24,6 +26,10 @@ export interface GenerateResponseResult {
 export async function generateResponse(
   params: GenerateResponseParams
 ): Promise<GenerateResponseResult> {
+  if (!ai) {
+    throw new Error("Gemini API not configured. Please set GEMINI_API_KEY environment variable.");
+  }
+
   const { template, reviewText, rating, authorName, companyName, tone } = params;
 
   const prompt = `Você é um assistente de IA especializado em gerar respostas profissionais e empáticas para avaliações de clientes do Google Business Profile.
